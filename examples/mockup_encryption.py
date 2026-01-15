@@ -10,38 +10,39 @@ from bite import BITEMockup
 
 
 async def main():
+    """Main function to run the example."""
     # Transaction to encrypt
     transaction = {
         'to': '0x1234567890123456789012345678901234567890',
         'data': '0x1234567890abcdef'
     }
-    
+
     try:
         # Initialize BITE Mockup
         bite_mock = BITEMockup()
-        
+
         # Encrypt the transaction (mock)
         print("Original transaction:")
         print(f"  To: {transaction['to']}")
         print(f"  Data: {transaction['data']}")
         print()
-        
+
         encrypted_tx = await bite_mock.encrypt_transaction(transaction)
-        
+
         print("Mock encrypted transaction:")
         print(f"  To: {encrypted_tx['to']}")
         print(f"  Data: {encrypted_tx['data'][:66]}...")
         print(f"  Gas Limit: {encrypted_tx['gas_limit']}")
         print()
-        
+
         # Encrypt a message (mock)
         message = '0x48656c6c6f20574f524c44'
         print(f"Original message: {message}")
-        
+
         encrypted_message = await bite_mock.encrypt_message(message)
         print(f"Mock encrypted message: {encrypted_message[:66]}...")
-        
-    except Exception as error:
+
+    except Exception as error: # pylint: disable=broad-except
         print(f'Error: {error}')
 
 

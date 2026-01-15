@@ -11,6 +11,5 @@ the Free Software Foundation, either version 3 of the License, or
 
 from . import bite_rpc
 from . import encrypt
-from . import t_encrypt_adapter
 
-__all__ = ['bite_rpc', 'encrypt', 't_encrypt_adapter']
+__all__ = ['bite_rpc', 'encrypt']

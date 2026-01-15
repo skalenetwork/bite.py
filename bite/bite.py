@@ -25,81 +25,81 @@ from .core import encrypt, bite_rpc
 class BITE:
     """
     Main BITE class for interacting with BITE-enabled SKALE chains.
-    
+
     This class provides methods to encrypt transaction data and messages
     using BLS threshold encryption.
     """
-    
+
     def __init__(self, provider_url: str):
         """
         Initialize BITE instance.
-        
+
         Args:
             provider_url: The BITE URL provider (JSON-RPC endpoint)
         """
         self.provider_url = provider_url
-    
+
     async def encrypt_message(self, message: str) -> str:
         """
         Encrypt a hex-encoded message using BLS public key.
-        
+
         Args:
             message: Hex string (with or without 0x prefix)
-            
+
         Returns:
             Encrypted message as hex string
-            
+
         Raises:
             ValueError: If message is invalid
             Exception: If encryption fails
         """
         return await encrypt.encrypt_message(message, self.provider_url)
-    
+
     async def encrypt_transaction(self, tx: Dict[str, str]) -> Dict[str, str]:
         """
         Encrypt a transaction object using BLS public key.
-        
+
         Args:
             tx: The transaction to encrypt (dict with 'to', 'data', optional 'gas_limit')
-            
+
         Returns:
             The encrypted transaction with modified 'data' and 'to' fields
-            
+
         Raises:
             ValueError: If transaction is invalid
             Exception: If encryption fails
         """
         return await encrypt.encrypt_transaction(tx, self.provider_url)
-    
+
     async def get_committees_info(self) -> List[Dict[str, any]]:
         """
         Fetch the committees info from the configured endpoint.
-        
+
         Returns:
             List of committee information dictionaries containing
             'common_bls_public_key' and 'epoch_id'
-            
+
         Raises:
             Exception: If RPC request fails
         """
         committees = await bite_rpc.get_committees_info(self.provider_url)
         return [c.to_dict() for c in committees]
-    
+
     async def get_decrypted_transaction_data(self, transaction_hash: str) -> str:
         """
         Get decrypted transaction data using the configured endpoint.
-        
+
         Args:
             transaction_hash: The hash of the transaction
-            
+
         Returns:
             The decrypted transaction data
-            
+
         Raises:
             Exception: If RPC request fails
         """
         return await bite_rpc.get_decrypted_transaction_data(
-            self.provider_url, 
+            self.provider_url,
             transaction_hash
         )
 
@@ -107,35 +107,35 @@ class BITE:
 class BITEMockup:
     """
     Mockup version of BITE for testing without connecting to a real endpoint.
-    
+
     This class simulates encryption operations for testing purposes.
     """
-    
+
     async def encrypt_message(self, message: str) -> str:
         """
         Simulate encryption of a hex-encoded message.
-        
+
         Args:
             message: Hex string (with or without 0x prefix)
-            
+
         Returns:
             Mock encrypted message as hex string
-            
+
         Raises:
             ValueError: If message is invalid
         """
         return await encrypt.encrypt_message_mockup(message)
-    
+
     async def encrypt_transaction(self, tx: Dict[str, str]) -> Dict[str, str]:
         """
         Simulate encryption of a transaction object.
-        
+
         Args:
             tx: The transaction to encrypt (dict with 'to', 'data', optional 'gas_limit')
-            
+
         Returns:
             The mock encrypted transaction with modified 'data' and 'to' fields
-            
+
         Raises:
             ValueError: If transaction is invalid
         """

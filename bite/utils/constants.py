@@ -20,5 +20,5 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os
 
 BITE_ADDRESS = "0x42495445204D452049274d20454e435259505444"
-DEFAULT_GAS_LIMIT = "0x493e0"  # 300000
+DEFAULT_GAS_LIMIT = 500000
 NODE_ENV = os.environ.get("NODE_ENV", "production")

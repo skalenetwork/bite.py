@@ -23,10 +23,10 @@ from urllib.parse import urlparse
 def remove_0x_prefix_if_needed(hex_str: str) -> str:
     """
     Remove '0x' prefix from hex string if present.
-    
+
     Args:
         hex_str: Hex string with or without '0x' prefix
-        
+
     Returns:
         Hex string without '0x' prefix
     """
@@ -36,10 +36,10 @@ def remove_0x_prefix_if_needed(hex_str: str) -> str:
 def validate_url(url: str) -> None:
     """
     Validate that a string is a valid URL.
-    
+
     Args:
         url: URL string to validate
-        
+
     Raises:
         ValueError: If URL is invalid
     """
@@ -47,22 +47,22 @@ def validate_url(url: str) -> None:
         result = urlparse(url)
         if not all([result.scheme, result.netloc]):
             raise ValueError(f"Invalid provider URL: {url}")
-    except Exception:
-        raise ValueError(f"Invalid provider URL: {url}")
+    except Exception as exc:
+        raise ValueError(f"Invalid provider URL: {url}") from exc
 
 
 def validate_hex_string(hex_str: str) -> None:
     """
     Validate that a string contains only hex characters and has even length.
-    
+
     Args:
         hex_str: Hex string to validate (without '0x' prefix)
-        
+
     Raises:
         ValueError: If string is not valid hex or has odd length
     """
     if not all(c in '0123456789abcdefABCDEF' for c in hex_str):
         raise ValueError("Invalid input: Must contain only hexadecimal characters")
-    
+
     if len(hex_str) % 2 != 0:
         raise ValueError("Invalid input: Must have an even length")

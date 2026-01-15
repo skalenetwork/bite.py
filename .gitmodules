@@ -1,0 +1,3 @@
+[submodule "libBLS"]
+	path = libBLS
+	url = https://github.com/skalenetwork/libBLS.git
