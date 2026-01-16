@@ -1,33 +1,35 @@
+#   -*- coding: utf-8 -*-
+#
+#   This file is part of SKALE.py
+#
+#   Copyright (C) 2019-Present SKALE Labs
+#
+#   SKALE.py is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU Affero General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   SKALE.py is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU Affero General Public License for more details.
+#
+#   You should have received a copy of the GNU Affero General Public License
+#   along with SKALE.py.  If not, see <https://www.gnu.org/licenses/>.
+
 """
 BITE Python Library - Encryption Module
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-@copyright SKALE Labs 2025-Present
 """
 
 from typing import Dict, Optional
+
 import rlp
+from skale_te import encrypt_message as lib_encrypt_message
+from skale_te import encrypt_message_dual_key as lib_encrypt_message_dual_key
+from skale_te import encrypt_message_mockup as lib_encrypt_message_mockup
 
-from skale_te import (
-    encrypt_message as lib_encrypt_message,
-    encrypt_message_dual_key as lib_encrypt_message_dual_key,
-    encrypt_message_mockup as lib_encrypt_message_mockup
-)
-
+from ..utils import constants, helper, logger
 from . import bite_rpc
-from ..utils import helper, logger, constants
 
 
 class Transaction:
