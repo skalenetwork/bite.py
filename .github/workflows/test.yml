@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
@@ -26,6 +26,12 @@ jobs:
 
     - name: Install local skale_te
       run: uv pip install ./local_dependencies/skale_te_pkg
+
+    - name: Verify libencrypt.so existence
+      run: |
+        echo "Checking for libencrypt.so..."
+        find .venv -name "libencrypt.so" -exec ls -l {} \;
+        find .venv -name "libencrypt.so" -exec ldd {} \; || true
 
     - name: Lint with ruff
       run: uv run ruff check . --exclude libBLS

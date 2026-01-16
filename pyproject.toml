@@ -58,11 +58,11 @@ exclude = ["tests*", "examples*"]
 python_version = "3.11"
 warn_unused_configs = true
 ignore_missing_imports = true
-exclude = ["build/", "dist/", "deps/", "temp_libBLS/", "local_dependencies/", "libBLS/"]
+exclude = ["build/", "dist/", "deps/", "local_dependencies/", "libBLS/"]
 
 [tool.ruff]
 line-length = 100
-exclude = ["helper-scripts", ".git"]
+exclude = ["helper-scripts", ".git", "build", "dist", "deps", "local_dependencies", "libBLS"]
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I"]
