@@ -24,6 +24,9 @@ jobs:
     - name: Install dependencies
       run: uv sync --all-extras
 
+    - name: Install local skale_te
+      run: uv pip install ./local_dependencies/skale_te_pkg
+
     - name: Lint with ruff
       run: uv run ruff check . --exclude libBLS
 

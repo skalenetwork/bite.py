@@ -23,26 +23,6 @@ BITE Python Library - Conftest for pytest
 
 import os
 import sys
-from unittest.mock import MagicMock
 
 # Add parent directory to path to allow imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-# Mock skale_te module if not present
-try:
-    import skale_te
-except ImportError:
-    skale_te = MagicMock()
-
-    def mock_encrypt(data):
-        return f"encrypted_{data}"
-
-    skale_te.encrypt_message.side_effect = mock_encrypt
-    skale_te.encrypt_message_dual_key.side_effect = mock_encrypt
-
-    def mock_encrypt_mockup(data):
-        return data + "abcdef123456"
-
-    skale_te.encrypt_message_mockup.side_effect = mock_encrypt_mockup
-
-    sys.modules['skale_te'] = skale_te
