@@ -21,7 +21,7 @@
 BITE Python Library - Main BITE Class
 """
 
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from .core import bite_rpc, encrypt
 
@@ -75,7 +75,7 @@ class BITE:
         """
         return await encrypt.encrypt_transaction(tx, self.provider_url)
 
-    async def get_committees_info(self) -> List[Dict[str, any]]:
+    async def get_committees_info(self) -> List[Dict[str, Any]]:
         """
         Fetch the committees info from the configured endpoint.
 
@@ -86,7 +86,7 @@ class BITE:
         Raises:
             Exception: If RPC request fails
         """
-        committees = await bite_rpc.get_committees_info(self.provider_url)
+        committees = bite_rpc.get_committees_info(self.provider_url)
         return [c.to_dict() for c in committees]
 
     async def get_decrypted_transaction_data(self, transaction_hash: str) -> str:
@@ -102,7 +102,7 @@ class BITE:
         Raises:
             Exception: If RPC request fails
         """
-        return await bite_rpc.get_decrypted_transaction_data(
+        return bite_rpc.get_decrypted_transaction_data(
             self.provider_url,
             transaction_hash
         )
@@ -128,7 +128,7 @@ class BITEMockup:
         Raises:
             ValueError: If message is invalid
         """
-        return await encrypt.encrypt_message_mockup(message)
+        return encrypt.encrypt_message_mockup(message)
 
     async def encrypt_transaction(self, tx: Dict[str, str]) -> Dict[str, str]:
         """

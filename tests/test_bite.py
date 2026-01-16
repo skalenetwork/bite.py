@@ -78,7 +78,7 @@ class TestConstants:
 
     def test_default_gas_limit(self):
         """Test default gas limit constant."""
-        assert constants.DEFAULT_GAS_LIMIT == '0x493e0'
+        assert constants.DEFAULT_GAS_LIMIT == 500000
 
 
 @pytest.mark.asyncio

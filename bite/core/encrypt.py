@@ -21,7 +21,7 @@
 BITE Python Library - Encryption Module
 """
 
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 import rlp
 from skale_te import encrypt_message as lib_encrypt_message
@@ -52,7 +52,7 @@ class Transaction:
         return result
 
 
-async def encrypt_transaction(tx: Dict[str, str], endpoint: str) -> Dict[str, str]:
+async def encrypt_transaction(tx: Dict[str, Any], endpoint: str) -> Dict[str, Any]:
     """
     Encrypt a transaction using the real BLS key.
 
@@ -91,7 +91,7 @@ async def encrypt_transaction(tx: Dict[str, str], endpoint: str) -> Dict[str, st
         raise
 
 
-async def encrypt_transaction_mockup(tx: Dict[str, str]) -> Dict[str, str]:
+async def encrypt_transaction_mockup(tx: Dict[str, Any]) -> Dict[str, Any]:
     """
     Encrypt a transaction using mock encryption.
 
