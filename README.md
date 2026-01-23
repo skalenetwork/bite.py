@@ -42,6 +42,7 @@ async def main():
     transaction = {
         'to': '0x1234567890123456789012345678901234567890',
         'data': '0x1234567890abcdef'
+        'gas_limit': 500000
     }
 
     try:
