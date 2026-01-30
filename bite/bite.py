@@ -21,9 +21,10 @@
 BITE Python Library - Main BITE Class
 """
 
-from typing import Any, Dict, List
+from typing import Dict, List
 
 from .core import bite_rpc, encrypt
+from .utils import helper
 
 
 class BITE:
@@ -75,19 +76,38 @@ class BITE:
         """
         return await encrypt.encrypt_transaction(tx, self.provider_url)
 
-    async def get_committees_info(self) -> List[Dict[str, Any]]:
+    def encrypt_transaction_with_committee_info(
+        self,
+        tx: Dict[str, str],
+        committees: List[helper.CommonPublicKeyResponse]
+    ) -> Dict[str, str]:
+        """
+        Encrypt a transaction object using provided committee info.
+
+        Args:
+            tx: The transaction to encrypt (dict with 'to', 'data', optional 'gas_limit')
+            committees: List of committee info objects
+
+        Returns:
+            The encrypted transaction with modified 'data' and 'to' fields
+
+        Raises:
+            ValueError: If transaction or committees are invalid
+            Exception: If encryption fails
+        """
+        return encrypt.encrypt_transaction_with_committee_info(tx, committees)
+
+    async def get_committees_info(self) -> List[helper.CommonPublicKeyResponse]:
         """
         Fetch the committees info from the configured endpoint.
 
         Returns:
-            List of committee information dictionaries containing
-            'common_bls_public_key' and 'epoch_id'
+            List of committee information objects
 
         Raises:
             Exception: If RPC request fails
         """
-        committees = bite_rpc.get_committees_info(self.provider_url)
-        return [c.to_dict() for c in committees]
+        return bite_rpc.get_committees_info(self.provider_url)
 
     async def get_decrypted_transaction_data(self, transaction_hash: str) -> str:
         """

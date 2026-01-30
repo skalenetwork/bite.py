@@ -21,7 +21,24 @@
 BITE Python Library - Helper functions
 """
 
+from typing import Any, Dict
 from urllib.parse import urlparse
+
+
+class CommonPublicKeyResponse:
+    """Response object for committee information."""
+    # pylint: disable=too-few-public-methods
+
+    def __init__(self, common_bls_public_key: str, epoch_id: int):
+        self.common_bls_public_key = common_bls_public_key
+        self.epoch_id = epoch_id
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary representation."""
+        return {
+            'common_bls_public_key': self.common_bls_public_key,
+            'epoch_id': self.epoch_id
+        }
 
 
 def remove_0x_prefix_if_needed(hex_str: str) -> str:

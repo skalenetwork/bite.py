@@ -21,7 +21,7 @@
 BITE Python Library - Encryption Module
 """
 
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import rlp
 from skale_te import encrypt_message as lib_encrypt_message
@@ -88,6 +88,70 @@ async def encrypt_transaction(tx: Dict[str, Any], endpoint: str) -> Dict[str, An
         }
     except Exception as error:
         logger.error('Error encrypting transaction: %s', error)
+        raise
+
+
+def encrypt_transaction_with_committee_info(
+    tx: Dict[str, Any],
+    committees: List[helper.CommonPublicKeyResponse]
+) -> Dict[str, Any]:
+    """
+    Encrypt a transaction using provided committee info.
+
+    Args:
+        tx: The transaction object with 'to' and 'data' fields
+        committees: List of committee info objects
+
+    Returns:
+        Encrypted transaction with modified 'data' and 'to' fields
+
+    Raises:
+        ValueError: If transaction validation fails or invalid committees
+        Exception: If encryption fails
+    """
+    try:
+        validated_tx = _validate_and_extract_transaction_fields(tx)
+        tx_to = validated_tx['to']
+        tx_data = validated_tx['data']
+
+        rlp_encoded_data = _rlp_encode_transaction_data(tx_to, tx_data)
+
+        if len(committees) == 1:
+            encrypted_raw_message = lib_encrypt_message(
+                rlp_encoded_data,
+                committees[0].common_bls_public_key
+            )
+            rlp_encoded_result = _rlp_encode_message_data([
+                committees[0].epoch_id,
+                bytes.fromhex(encrypted_raw_message)
+            ])
+            encrypted_data = f'0x{rlp_encoded_result}'
+        elif len(committees) == 2:
+            encrypted_raw_message = lib_encrypt_message_dual_key(
+                rlp_encoded_data,
+                committees[0].common_bls_public_key,
+                committees[1].common_bls_public_key
+            )
+            rlp_encoded_result = _rlp_encode_message_data([
+                committees[0].epoch_id,
+                bytes.fromhex(encrypted_raw_message)
+            ])
+            encrypted_data = f'0x{rlp_encoded_result}'
+        else:
+            raise ValueError(
+                'Invalid input: committees array must contain one or two committee info objects'
+            )
+
+        bite_gas_limit = tx.get('gas_limit', constants.DEFAULT_GAS_LIMIT)
+
+        return {
+            **tx,
+            'data': encrypted_data,
+            'to': constants.BITE_ADDRESS,
+            'gas_limit': bite_gas_limit
+        }
+    except Exception as error:
+        logger.error('Error encrypting transaction with committee info: %s', error)
         raise
 
 
@@ -181,7 +245,7 @@ async def encrypt_message(message: str, endpoint: str) -> str:
         raise
 
 
-def encrypt_message_mockup(message: str) -> str:
+async def encrypt_message_mockup(message: str) -> str:
     """
     Encrypt a raw hex-encoded message using mock encryption.
 

@@ -29,23 +29,7 @@ import requests
 from ..utils import helper, logger
 
 
-class CommonPublicKeyResponse:
-    """Response object for committee information."""
-    # pylint: disable=too-few-public-methods
-
-    def __init__(self, common_bls_public_key: str, epoch_id: int):
-        self.common_bls_public_key = common_bls_public_key
-        self.epoch_id = epoch_id
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary representation."""
-        return {
-            'common_bls_public_key': self.common_bls_public_key,
-            'epoch_id': self.epoch_id
-        }
-
-
-def get_decrypted_transaction_data(endpoint: str, transaction_hash: str) -> str:
+async def get_decrypted_transaction_data(endpoint: str, transaction_hash: str) -> str:
     """
     Fetch decrypted transaction data via JSON-RPC endpoint.
 
@@ -77,7 +61,7 @@ def get_decrypted_transaction_data(endpoint: str, transaction_hash: str) -> str:
         raise
 
 
-def get_committees_info(endpoint: str) -> List[CommonPublicKeyResponse]:
+def get_committees_info(endpoint: str) -> List[helper.CommonPublicKeyResponse]:
     """
     Request the committees info via JSON-RPC.
 
@@ -125,7 +109,7 @@ def get_committees_info(endpoint: str) -> List[CommonPublicKeyResponse]:
                 )
 
             validated_results.append(
-                CommonPublicKeyResponse(item['commonBLSPublicKey'], item['epochId'])
+                helper.CommonPublicKeyResponse(item['commonBLSPublicKey'], item['epochId'])
             )
 
         return validated_results
