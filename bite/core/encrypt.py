@@ -1,33 +1,35 @@
+#   -*- coding: utf-8 -*-
+#
+#   This file is part of SKALE.py
+#
+#   Copyright (C) 2019-Present SKALE Labs
+#
+#   SKALE.py is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU Affero General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   SKALE.py is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU Affero General Public License for more details.
+#
+#   You should have received a copy of the GNU Affero General Public License
+#   along with SKALE.py.  If not, see <https://www.gnu.org/licenses/>.
+
 """
 BITE Python Library - Encryption Module
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-@copyright SKALE Labs 2025-Present
 """
 
-from typing import Dict, Optional
+from typing import Any, Dict, List, Optional
+
 import rlp
+from skale_te import encrypt_message as lib_encrypt_message
+from skale_te import encrypt_message_dual_key as lib_encrypt_message_dual_key
+from skale_te import encrypt_message_mockup as lib_encrypt_message_mockup
 
-from skale_te import (
-    encrypt_message as lib_encrypt_message,
-    encrypt_message_dual_key as lib_encrypt_message_dual_key,
-    encrypt_message_mockup as lib_encrypt_message_mockup
-)
-
+from ..utils import constants, helper, logger
 from . import bite_rpc
-from ..utils import helper, logger, constants
 
 
 class Transaction:
@@ -50,7 +52,7 @@ class Transaction:
         return result
 
 
-async def encrypt_transaction(tx: Dict[str, str], endpoint: str) -> Dict[str, str]:
+async def encrypt_transaction(tx: Dict[str, Any], endpoint: str) -> Dict[str, Any]:
     """
     Encrypt a transaction using the real BLS key.
 
@@ -89,7 +91,71 @@ async def encrypt_transaction(tx: Dict[str, str], endpoint: str) -> Dict[str, st
         raise
 
 
-async def encrypt_transaction_mockup(tx: Dict[str, str]) -> Dict[str, str]:
+def encrypt_transaction_with_committee_info(
+    tx: Dict[str, Any],
+    committees: List[helper.CommonPublicKeyResponse]
+) -> Dict[str, Any]:
+    """
+    Encrypt a transaction using provided committee info.
+
+    Args:
+        tx: The transaction object with 'to' and 'data' fields
+        committees: List of committee info objects
+
+    Returns:
+        Encrypted transaction with modified 'data' and 'to' fields
+
+    Raises:
+        ValueError: If transaction validation fails or invalid committees
+        Exception: If encryption fails
+    """
+    try:
+        validated_tx = _validate_and_extract_transaction_fields(tx)
+        tx_to = validated_tx['to']
+        tx_data = validated_tx['data']
+
+        rlp_encoded_data = _rlp_encode_transaction_data(tx_to, tx_data)
+
+        if len(committees) == 1:
+            encrypted_raw_message = lib_encrypt_message(
+                rlp_encoded_data,
+                committees[0].common_bls_public_key
+            )
+            rlp_encoded_result = _rlp_encode_message_data([
+                committees[0].epoch_id,
+                bytes.fromhex(encrypted_raw_message)
+            ])
+            encrypted_data = f'0x{rlp_encoded_result}'
+        elif len(committees) == 2:
+            encrypted_raw_message = lib_encrypt_message_dual_key(
+                rlp_encoded_data,
+                committees[0].common_bls_public_key,
+                committees[1].common_bls_public_key
+            )
+            rlp_encoded_result = _rlp_encode_message_data([
+                committees[0].epoch_id,
+                bytes.fromhex(encrypted_raw_message)
+            ])
+            encrypted_data = f'0x{rlp_encoded_result}'
+        else:
+            raise ValueError(
+                'Invalid input: committees array must contain one or two committee info objects'
+            )
+
+        bite_gas_limit = tx.get('gas_limit', constants.DEFAULT_GAS_LIMIT)
+
+        return {
+            **tx,
+            'data': encrypted_data,
+            'to': constants.BITE_ADDRESS,
+            'gas_limit': bite_gas_limit
+        }
+    except Exception as error:
+        logger.error('Error encrypting transaction with committee info: %s', error)
+        raise
+
+
+def encrypt_transaction_mockup(tx: Dict[str, Any]) -> Dict[str, Any]:
     """
     Encrypt a transaction using mock encryption.
 

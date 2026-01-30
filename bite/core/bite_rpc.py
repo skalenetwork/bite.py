@@ -1,20 +1,24 @@
+#   -*- coding: utf-8 -*-
+#
+#   This file is part of SKALE.py
+#
+#   Copyright (C) 2019-Present SKALE Labs
+#
+#   SKALE.py is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU Affero General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   SKALE.py is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU Affero General Public License for more details.
+#
+#   You should have received a copy of the GNU Affero General Public License
+#   along with SKALE.py.  If not, see <https://www.gnu.org/licenses/>.
+
 """
 BITE Python Library - RPC Client
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-@copyright SKALE Labs 2025-Present
 """
 
 import re
@@ -25,23 +29,7 @@ import requests
 from ..utils import helper, logger
 
 
-class CommonPublicKeyResponse:
-    """Response object for committee information."""
-    # pylint: disable=too-few-public-methods
-
-    def __init__(self, common_bls_public_key: str, epoch_id: int):
-        self.common_bls_public_key = common_bls_public_key
-        self.epoch_id = epoch_id
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary representation."""
-        return {
-            'common_bls_public_key': self.common_bls_public_key,
-            'epoch_id': self.epoch_id
-        }
-
-
-def get_decrypted_transaction_data(endpoint: str, transaction_hash: str) -> str:
+async def get_decrypted_transaction_data(endpoint: str, transaction_hash: str) -> str:
     """
     Fetch decrypted transaction data via JSON-RPC endpoint.
 
@@ -73,7 +61,7 @@ def get_decrypted_transaction_data(endpoint: str, transaction_hash: str) -> str:
         raise
 
 
-def get_committees_info(endpoint: str) -> List[CommonPublicKeyResponse]:
+def get_committees_info(endpoint: str) -> List[helper.CommonPublicKeyResponse]:
     """
     Request the committees info via JSON-RPC.
 
@@ -121,7 +109,7 @@ def get_committees_info(endpoint: str) -> List[CommonPublicKeyResponse]:
                 )
 
             validated_results.append(
-                CommonPublicKeyResponse(item['commonBLSPublicKey'], item['epochId'])
+                helper.CommonPublicKeyResponse(item['commonBLSPublicKey'], item['epochId'])
             )
 
         return validated_results
