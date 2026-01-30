@@ -97,7 +97,7 @@ class BITE:
         """
         return encrypt.encrypt_transaction_with_committee_info(tx, committees)
 
-    async def get_committees_info(self) -> List[helper.CommonPublicKeyResponse]:
+    def get_committees_info(self) -> List[helper.CommonPublicKeyResponse]:
         """
         Fetch the committees info from the configured endpoint.
 
@@ -122,7 +122,7 @@ class BITE:
         Raises:
             Exception: If RPC request fails
         """
-        return bite_rpc.get_decrypted_transaction_data(
+        return await bite_rpc.get_decrypted_transaction_data(
             self.provider_url,
             transaction_hash
         )
@@ -150,7 +150,7 @@ class BITEMockup:
         """
         return encrypt.encrypt_message_mockup(message)
 
-    async def encrypt_transaction(self, tx: Dict[str, str]) -> Dict[str, str]:
+    def encrypt_transaction(self, tx: Dict[str, str]) -> Dict[str, str]:
         """
         Simulate encryption of a transaction object.
 
@@ -163,4 +163,4 @@ class BITEMockup:
         Raises:
             ValueError: If transaction is invalid
         """
-        return await encrypt.encrypt_transaction_mockup(tx)
+        return encrypt.encrypt_transaction_mockup(tx)

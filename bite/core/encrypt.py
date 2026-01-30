@@ -155,7 +155,7 @@ def encrypt_transaction_with_committee_info(
         raise
 
 
-async def encrypt_transaction_mockup(tx: Dict[str, Any]) -> Dict[str, Any]:
+def encrypt_transaction_mockup(tx: Dict[str, Any]) -> Dict[str, Any]:
     """
     Encrypt a transaction using mock encryption.
 
