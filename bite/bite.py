@@ -135,7 +135,7 @@ class BITEMockup:
     This class simulates encryption operations for testing purposes.
     """
 
-    async def encrypt_message(self, message: str) -> str:
+    def encrypt_message(self, message: str) -> str:
         """
         Simulate encryption of a hex-encoded message.
 

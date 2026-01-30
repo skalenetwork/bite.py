@@ -245,7 +245,7 @@ async def encrypt_message(message: str, endpoint: str) -> str:
         raise
 
 
-async def encrypt_message_mockup(message: str) -> str:
+def encrypt_message_mockup(message: str) -> str:
     """
     Encrypt a raw hex-encoded message using mock encryption.
 
