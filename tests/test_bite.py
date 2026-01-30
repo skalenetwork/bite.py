@@ -85,27 +85,27 @@ class TestConstants:
 class TestBITEMockup:
     """Tests for BITEMockup class."""
 
-    async def test_encrypt_message_with_0x(self):
+    def test_encrypt_message_with_0x(self):
         """Test mock message encryption with 0x prefix."""
         bite_mock = BITEMockup()
         message = '0x1234567890abcdef'
 
-        encrypted = await bite_mock.encrypt_message(message)
+        encrypted = bite_mock.encrypt_message(message)
 
         assert encrypted.startswith('0x')
         assert len(encrypted) > len(message)
 
-    async def test_encrypt_message_without_0x(self):
+    def test_encrypt_message_without_0x(self):
         """Test mock message encryption without 0x prefix."""
         bite_mock = BITEMockup()
         message = '1234567890abcdef'
 
-        encrypted = await bite_mock.encrypt_message(message)
+        encrypted = bite_mock.encrypt_message(message)
 
         assert encrypted.startswith('0x')
         assert len(encrypted) > len(message)
 
-    async def test_encrypt_transaction(self):
+    def test_encrypt_transaction(self):
         """Test mock transaction encryption."""
         bite_mock = BITEMockup()
         tx = {
@@ -113,13 +113,13 @@ class TestBITEMockup:
             'data': '0x1234567890abcdef'
         }
 
-        encrypted_tx = await bite_mock.encrypt_transaction(tx)
+        encrypted_tx = bite_mock.encrypt_transaction(tx)
 
         assert encrypted_tx['to'] == constants.BITE_ADDRESS
         assert encrypted_tx['data'].startswith('0x')
         assert encrypted_tx['gas_limit'] == constants.DEFAULT_GAS_LIMIT
 
-    async def test_encrypt_transaction_with_gas_limit(self):
+    def test_encrypt_transaction_with_gas_limit(self):
         """Test mock transaction encryption with custom gas limit."""
         bite_mock = BITEMockup()
         custom_gas = '0x100000'
@@ -129,7 +129,7 @@ class TestBITEMockup:
             'gas_limit': custom_gas
         }
 
-        encrypted_tx = await bite_mock.encrypt_transaction(tx)
+        encrypted_tx = bite_mock.encrypt_transaction(tx)
 
         assert encrypted_tx['gas_limit'] == custom_gas
 
