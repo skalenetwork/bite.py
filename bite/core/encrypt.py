@@ -334,7 +334,7 @@ def encrypt_message_for_ctx_with_committee_info(
     """
     try:
         ctx_submitter_address = helper.remove_0x_prefix_if_needed(ctx_submitter_address)
-        
+
         if len(ctx_submitter_address) != 40:
             raise ValueError(
                 "Invalid input: 'ctx_submitter_address' field must be exactly 20 bytes"
