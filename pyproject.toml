@@ -54,6 +54,9 @@ where = ["."]
 include = ["bite*"]
 exclude = ["tests*", "examples*"]
 
+[tool.setuptools.package-data]
+"bite" = ["lib/*.so*"]
+
 [tool.mypy]
 python_version = "3.11"
 warn_unused_configs = true
