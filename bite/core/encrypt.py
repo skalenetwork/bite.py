@@ -301,27 +301,52 @@ async def encrypt_message_for_ctx(
         Exception: If encryption fails
     """
     try:
-        message = helper.remove_0x_prefix_if_needed(message)
-        ctx_submitter_address = helper.remove_0x_prefix_if_needed(
-            ctx_submitter_address
+        public_key_responses = bite_rpc.get_committees_info(endpoint)
+        return encrypt_message_for_ctx_with_committee_info(
+            message,
+            ctx_submitter_address,
+            public_key_responses
         )
+    except Exception as error:
+        logger.error('Error encrypting message for CTX: %s', error)
+        raise
 
-        helper.validate_hex_string(message)
-        helper.validate_hex_string(ctx_submitter_address)
 
+def encrypt_message_for_ctx_with_committee_info(
+    message: str,
+    ctx_submitter_address: str,
+    committees: List[helper.CommonPublicKeyResponse]
+) -> str:
+    """
+    Encrypt a message with a submitter address context using provided committee info.
+
+    Args:
+        message: The message to encrypt as hex string
+        ctx_submitter_address: The submitter address as hex string
+        committees: List of committee info objects
+
+    Returns:
+        The encrypted message as hex string
+
+    Raises:
+        ValueError: If validation fails or invalid committees
+        Exception: If encryption fails
+    """
+    try:
+        ctx_submitter_address = helper.remove_0x_prefix_if_needed(ctx_submitter_address)
+        
         if len(ctx_submitter_address) != 40:
             raise ValueError(
                 "Invalid input: 'ctx_submitter_address' field must be exactly 20 bytes"
             )
 
-        rlp_encoded_data = _rlp_encode_transaction_data(
-            ctx_submitter_address,
-            message
+        return encrypt_message_with_committee_info(
+            message,
+            committees,
+            aad_te=ctx_submitter_address
         )
-
-        return await encrypt_message(rlp_encoded_data, endpoint)
     except Exception as error:
-        logger.error('Error encrypting message for CTX: %s', error)
+        logger.error('Error encrypting message for CTX with committee info: %s', error)
         raise
 
 
