@@ -21,7 +21,7 @@
 BITE Python Library - Main BITE Class
 """
 
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from .core import bite_rpc, encrypt
 from .utils import helper
@@ -60,6 +60,32 @@ class BITE:
         """
         return await encrypt.encrypt_message(message, self.provider_url)
 
+    async def encrypt_message_for_ctx(
+        self,
+        message: str,
+        ctx_submitter_address: str
+    ) -> str:
+        """
+        Encrypt a hex-encoded message with a submitter address context using BLS public key.
+
+        Args:
+            message: Hex string (with or without 0x prefix)
+            ctx_submitter_address: Smart Contract Address for aadTE
+
+        Returns:
+            Encrypted message as hex string
+
+        Raises:
+            ValueError: If inputs are invalid
+            Exception: If encryption fails
+        """
+        committees = self.get_committees_info()
+        return encrypt.encrypt_message_with_committee_info(
+            message,
+            committees,
+            aad_te=ctx_submitter_address
+        )
+
     async def encrypt_transaction(self, tx: Dict[str, str]) -> Dict[str, str]:
         """
         Encrypt a transaction object using BLS public key.
@@ -79,7 +105,9 @@ class BITE:
     def encrypt_transaction_with_committee_info(
         self,
         tx: Dict[str, str],
-        committees: List[helper.CommonPublicKeyResponse]
+        committees: List[helper.CommonPublicKeyResponse],
+        aad_te: Optional[str] = None,
+        aad_aes: Optional[str] = None
     ) -> Dict[str, str]:
         """
         Encrypt a transaction object using provided committee info.
@@ -87,6 +115,8 @@ class BITE:
         Args:
             tx: The transaction to encrypt (dict with 'to', 'data', optional 'gas_limit')
             committees: List of committee info objects
+            aad_te: Optional TE Additional Authenticated Data
+            aad_aes: Optional AES Additional Authenticated Data
 
         Returns:
             The encrypted transaction with modified 'data' and 'to' fields
@@ -95,7 +125,12 @@ class BITE:
             ValueError: If transaction or committees are invalid
             Exception: If encryption fails
         """
-        return encrypt.encrypt_transaction_with_committee_info(tx, committees)
+        return encrypt.encrypt_transaction_with_committee_info(
+            tx,
+            committees,
+            aad_te=aad_te,
+            aad_aes=aad_aes
+        )
 
     def get_committees_info(self) -> List[helper.CommonPublicKeyResponse]:
         """
@@ -149,6 +184,22 @@ class BITEMockup:
             ValueError: If message is invalid
         """
         return encrypt.encrypt_message_mockup(message)
+
+    def encrypt_message_for_ctx(self, message: str, ctx_submitter_address: str) -> str:
+        """
+        Simulate encryption of a message with a submitter address context.
+
+        Args:
+            message: Hex string (with or without 0x prefix)
+            ctx_submitter_address: The submitter address as hex string
+
+        Returns:
+            Mock encrypted message as hex string
+
+        Raises:
+            ValueError: If inputs are invalid
+        """
+        return encrypt.encrypt_message_for_ctx_mockup(message, ctx_submitter_address)
 
     def encrypt_transaction(self, tx: Dict[str, str]) -> Dict[str, str]:
         """

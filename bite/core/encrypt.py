@@ -91,9 +91,12 @@ async def encrypt_transaction(tx: Dict[str, Any], endpoint: str) -> Dict[str, An
         raise
 
 
+
 def encrypt_transaction_with_committee_info(
     tx: Dict[str, Any],
-    committees: List[helper.CommonPublicKeyResponse]
+    committees: List[helper.CommonPublicKeyResponse],
+    aad_te: Optional[str] = None,
+    aad_aes: Optional[str] = None
 ) -> Dict[str, Any]:
     """
     Encrypt a transaction using provided committee info.
@@ -101,6 +104,8 @@ def encrypt_transaction_with_committee_info(
     Args:
         tx: The transaction object with 'to' and 'data' fields
         committees: List of committee info objects
+        aad_te: Optional TE Additional Authenticated Data
+        aad_aes: Optional AES Additional Authenticated Data
 
     Returns:
         Encrypted transaction with modified 'data' and 'to' fields
@@ -116,31 +121,20 @@ def encrypt_transaction_with_committee_info(
 
         rlp_encoded_data = _rlp_encode_transaction_data(tx_to, tx_data)
 
-        if len(committees) == 1:
-            encrypted_raw_message = lib_encrypt_message(
-                rlp_encoded_data,
-                committees[0].common_bls_public_key
-            )
-            rlp_encoded_result = _rlp_encode_message_data([
-                committees[0].epoch_id,
-                bytes.fromhex(encrypted_raw_message)
-            ])
-            encrypted_data = f'0x{rlp_encoded_result}'
-        elif len(committees) == 2:
-            encrypted_raw_message = lib_encrypt_message_dual_key(
-                rlp_encoded_data,
-                committees[0].common_bls_public_key,
-                committees[1].common_bls_public_key
-            )
-            rlp_encoded_result = _rlp_encode_message_data([
-                committees[0].epoch_id,
-                bytes.fromhex(encrypted_raw_message)
-            ])
-            encrypted_data = f'0x{rlp_encoded_result}'
-        else:
-            raise ValueError(
-                'Invalid input: committees array must contain one or two committee info objects'
-            )
+        sanitized_aad_aes = helper.remove_0x_prefix_if_needed(aad_aes) if aad_aes else None
+        sanitized_aad_te = helper.remove_0x_prefix_if_needed(aad_te) if aad_te else None
+
+        if sanitized_aad_aes:
+            helper.validate_hex_string(sanitized_aad_aes)
+        if sanitized_aad_te:
+            helper.validate_hex_string(sanitized_aad_te)
+
+        encrypted_data = encrypt_message_with_committee_info(
+            rlp_encoded_data,
+            committees,
+            sanitized_aad_te,
+            sanitized_aad_aes
+        )
 
         bite_gas_limit = tx.get('gas_limit', constants.DEFAULT_GAS_LIMIT)
 
@@ -153,6 +147,76 @@ def encrypt_transaction_with_committee_info(
     except Exception as error:
         logger.error('Error encrypting transaction with committee info: %s', error)
         raise
+
+
+def encrypt_message_with_committee_info(
+    message: str,
+    committees: List[helper.CommonPublicKeyResponse],
+    aad_te: Optional[str] = None,
+    aad_aes: Optional[str] = None
+) -> str:
+    """
+    Encrypt a message using provided committee info.
+
+    Args:
+        message: The message to encrypt as hex string
+        committees: List of committee info objects
+        aad_te: Optional TE Additional Authenticated Data
+        aad_aes: Optional AES Additional Authenticated Data
+
+    Returns:
+        The encrypted message as hex string
+
+    Raises:
+        ValueError: If validation fails or invalid committees
+        Exception: If encryption fails
+    """
+    try:
+        data = helper.remove_0x_prefix_if_needed(message)
+        helper.validate_hex_string(data)
+
+        sanitized_aad_aes = helper.remove_0x_prefix_if_needed(aad_aes) if aad_aes else None
+        sanitized_aad_te = helper.remove_0x_prefix_if_needed(aad_te) if aad_te else None
+
+        if sanitized_aad_aes:
+            helper.validate_hex_string(sanitized_aad_aes)
+        if sanitized_aad_te:
+            helper.validate_hex_string(sanitized_aad_te)
+
+        if len(committees) == 1:
+            encrypted_raw_message = lib_encrypt_message(
+                data,
+                committees[0].common_bls_public_key,
+                sanitized_aad_te,
+                sanitized_aad_aes
+            )
+            rlp_encoded_result = _rlp_encode_message_data([
+                committees[0].epoch_id,
+                bytes.fromhex(encrypted_raw_message)
+            ])
+            return f'0x{rlp_encoded_result}'
+
+        if len(committees) == 2:
+            encrypted_raw_message = lib_encrypt_message_dual_key(
+                data,
+                committees[0].common_bls_public_key,
+                committees[1].common_bls_public_key,
+                sanitized_aad_te,
+                sanitized_aad_aes
+            )
+            rlp_encoded_result = _rlp_encode_message_data([
+                committees[0].epoch_id,
+                bytes.fromhex(encrypted_raw_message)
+            ])
+            return f'0x{rlp_encoded_result}'
+
+        raise ValueError(
+            'Invalid input: committees array must contain one or two committee info objects'
+        )
+    except Exception as error:
+        logger.error('Error encrypting message with committee info: %s', error)
+        raise
+
 
 
 def encrypt_transaction_mockup(tx: Dict[str, Any]) -> Dict[str, Any]:
@@ -209,39 +273,55 @@ async def encrypt_message(message: str, endpoint: str) -> str:
         Exception: If encryption fails
     """
     try:
-        data = helper.remove_0x_prefix_if_needed(message)
-        helper.validate_hex_string(data)
-
         public_key_responses = bite_rpc.get_committees_info(endpoint)
-
-        if len(public_key_responses) == 1:
-            public_key_response = public_key_responses[0]
-            encrypted_raw_message = lib_encrypt_message(
-                data,
-                public_key_response.common_bls_public_key
-            )
-
-            # RLP encode epoch_id and encrypted message
-            rlp_encoded_result = _rlp_encode_message_data([
-                public_key_response.epoch_id,
-                bytes.fromhex(encrypted_raw_message)
-            ])
-            return f'0x{rlp_encoded_result}'
-
-        encrypted_raw_message = lib_encrypt_message_dual_key(
-            data,
-            public_key_responses[0].common_bls_public_key,
-            public_key_responses[1].common_bls_public_key
-        )
-
-        # RLP encode epoch_id and encrypted message
-        rlp_encoded_result = _rlp_encode_message_data([
-            public_key_responses[0].epoch_id,
-            bytes.fromhex(encrypted_raw_message)
-        ])
-        return f'0x{rlp_encoded_result}'
+        return encrypt_message_with_committee_info(message, public_key_responses)
     except Exception as error:
         logger.error('Error encrypting message: %s', error)
+        raise
+
+
+async def encrypt_message_for_ctx(
+    message: str,
+    ctx_submitter_address: str,
+    endpoint: str
+) -> str:
+    """
+    Encrypt a message with a submitter address context.
+
+    Args:
+        message: The message to encrypt as hex string
+        ctx_submitter_address: The submitter address as hex string
+        endpoint: BITE URL provider
+
+    Returns:
+        Encrypted message as hex string
+
+    Raises:
+        ValueError: If input validation fails
+        Exception: If encryption fails
+    """
+    try:
+        message = helper.remove_0x_prefix_if_needed(message)
+        ctx_submitter_address = helper.remove_0x_prefix_if_needed(
+            ctx_submitter_address
+        )
+
+        helper.validate_hex_string(message)
+        helper.validate_hex_string(ctx_submitter_address)
+
+        if len(ctx_submitter_address) != 40:
+            raise ValueError(
+                "Invalid input: 'ctx_submitter_address' field must be exactly 20 bytes"
+            )
+
+        rlp_encoded_data = _rlp_encode_transaction_data(
+            ctx_submitter_address,
+            message
+        )
+
+        return await encrypt_message(rlp_encoded_data, endpoint)
+    except Exception as error:
+        logger.error('Error encrypting message for CTX: %s', error)
         raise
 
 
@@ -275,6 +355,46 @@ def encrypt_message_mockup(message: str) -> str:
         return f'0x{rlp_encoded_result}'
     except Exception as error:
         logger.error('Error encrypting message: %s', error)
+        raise
+
+
+def encrypt_message_for_ctx_mockup(message: str, ctx_submitter_address: str) -> str:
+    """
+    Encrypt a message with a submitter address context using mock encryption.
+
+    Args:
+        message: The message to encrypt as hex string
+        ctx_submitter_address: The submitter address as hex string
+
+    Returns:
+        Encrypted message as hex string
+
+    Raises:
+        ValueError: If input validation fails
+        Exception: If encryption fails
+    """
+    try:
+        message = helper.remove_0x_prefix_if_needed(message)
+        ctx_submitter_address = helper.remove_0x_prefix_if_needed(
+            ctx_submitter_address
+        )
+
+        helper.validate_hex_string(message)
+        helper.validate_hex_string(ctx_submitter_address)
+
+        if len(ctx_submitter_address) != 40:
+            raise ValueError(
+                "Invalid input: 'ctx_submitter_address' field must be exactly 20 bytes"
+            )
+
+        rlp_encoded_data = _rlp_encode_transaction_data(
+            ctx_submitter_address,
+            message
+        )
+
+        return encrypt_message_mockup(rlp_encoded_data)
+    except Exception as error:
+        logger.error('Error encrypting message for CTX (mockup): %s', error)
         raise
 
 

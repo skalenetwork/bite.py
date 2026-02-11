@@ -8,11 +8,11 @@ echo "Installing build tool..."
 pip install build
 
 echo "Building skale_te dependency..."
-python -m build local_dependencies/skale_te_pkg
+python3 -m build local_dependencies/skale_te_pkg
 cp local_dependencies/skale_te_pkg/dist/*.whl final_dist/
 
 echo "Building bite-py..."
-python -m build .
+python3 -m build .
 cp dist/*.whl final_dist/
 
 echo "Build complete! Files are in 'final_dist' directory:"

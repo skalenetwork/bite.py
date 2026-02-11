@@ -24,7 +24,7 @@ A Python library for encrypting transaction data using the BITE
 (Blockchain Integrated Threshold Encryption) protocol.
 """
 
-__version__ = "0.7.0"
+__version__ = "0.8.0.dev1"
 
 from .bite import BITE, BITEMockup
 from .core.encrypt import Transaction
