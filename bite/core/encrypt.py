@@ -184,11 +184,12 @@ def encrypt_message_with_committee_info(
             helper.validate_hex_string(sanitized_aad_te)
 
         if len(committees) == 1:
+            # pylint: disable=too-many-function-args
             encrypted_raw_message = lib_encrypt_message(
                 data,
                 committees[0].common_bls_public_key,
-                sanitized_aad_te,
-                sanitized_aad_aes
+                sanitized_aad_aes,
+                sanitized_aad_te
             )
             rlp_encoded_result = _rlp_encode_message_data([
                 committees[0].epoch_id,
@@ -197,12 +198,13 @@ def encrypt_message_with_committee_info(
             return f'0x{rlp_encoded_result}'
 
         if len(committees) == 2:
+            # pylint: disable=too-many-function-args
             encrypted_raw_message = lib_encrypt_message_dual_key(
                 data,
                 committees[0].common_bls_public_key,
                 committees[1].common_bls_public_key,
-                sanitized_aad_te,
-                sanitized_aad_aes
+                sanitized_aad_aes,
+                sanitized_aad_te
             )
             rlp_encoded_result = _rlp_encode_message_data([
                 committees[0].epoch_id,

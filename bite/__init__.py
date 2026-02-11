@@ -26,12 +26,11 @@ A Python library for encrypting transaction data using the BITE
 
 __version__ = "0.8.0.dev2"
 
+from .bite import BITE, BITEMockup
+from .core.encrypt import Transaction
 from .utils.loader import preload_dependencies
 
 # Preload libcrypto.so.1.1 if needed for skale_te
 preload_dependencies()
-
-from .bite import BITE, BITEMockup
-from .core.encrypt import Transaction
 
 __all__ = ['BITE', 'BITEMockup', 'Transaction']
