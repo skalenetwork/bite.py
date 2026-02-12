@@ -37,6 +37,7 @@ echo "Activating virtual environment..."
 source venv/bin/activate
 
 echo "Installing dependencies..."
+pip install -q -r requirements.txt
 pip install -q pytest pytest-asyncio build
 
 echo "Running tests..."
