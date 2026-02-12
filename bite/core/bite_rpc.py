@@ -54,7 +54,7 @@ async def get_decrypted_transaction_data(endpoint: str, transaction_hash: str) -
             'id': 1
         }
 
-        result = _send_rpc_request(endpoint, request_body)
+        result = await _send_rpc_request(endpoint, request_body)
         return result
     except Exception as error:
         logger.error('Error fetching decrypted transaction data: %s', error)
