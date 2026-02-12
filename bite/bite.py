@@ -58,15 +58,12 @@ class BITE:
             ValueError: If message is invalid
             Exception: If encryption fails
         """
-        return await encrypt.encrypt_message(message, self.provider_url)
+        committees = await self.get_committees_info()
+        return await encrypt.encrypt_message(message, committees)
 
-    async def encrypt_message_for_ctx(
-        self,
-        message: str,
-        ctx_submitter_address: str
-    ) -> str:
+    async def encrypt_message_for_ctx(self, message: str, ctx_submitter_address: str) -> str:
         """
-        Encrypt a hex-encoded message with a submitter address context using BLS public key.
+        Encrypt a hex-encoded message using BLS public key for CTX.
 
         Args:
             message: Hex string (with or without 0x prefix)
@@ -79,12 +76,8 @@ class BITE:
             ValueError: If inputs are invalid
             Exception: If encryption fails
         """
-        committees = self.get_committees_info()
-        return encrypt.encrypt_message_with_committee_info(
-            message,
-            committees,
-            aad_te=ctx_submitter_address
-        )
+        committees = await self.get_committees_info()
+        return await encrypt.encrypt_message(message, committees, ctx_submitter_address)
 
     async def encrypt_transaction(self, tx: Dict[str, str]) -> Dict[str, str]:
         """
@@ -100,10 +93,11 @@ class BITE:
             ValueError: If transaction is invalid
             Exception: If encryption fails
         """
-        return await encrypt.encrypt_transaction(tx, self.provider_url)
+        committees = await self.get_committees_info()
+        return await encrypt.encrypt_transaction(tx, committees)
 
-    def encrypt_transaction_with_committee_info(
-        self,
+    @staticmethod
+    async def encrypt_transaction_with_committee_info(
         tx: Dict[str, str],
         committees: List[helper.CommonPublicKeyResponse],
         aad_te: Optional[str] = None,
@@ -125,14 +119,14 @@ class BITE:
             ValueError: If transaction or committees are invalid
             Exception: If encryption fails
         """
-        return encrypt.encrypt_transaction_with_committee_info(
+        return await encrypt.encrypt_transaction(
             tx,
             committees,
             aad_te=aad_te,
             aad_aes=aad_aes
         )
 
-    def get_committees_info(self) -> List[helper.CommonPublicKeyResponse]:
+    async def get_committees_info(self) -> List[helper.CommonPublicKeyResponse]:
         """
         Fetch the committees info from the configured endpoint.
 
@@ -142,7 +136,7 @@ class BITE:
         Raises:
             Exception: If RPC request fails
         """
-        return bite_rpc.get_committees_info(self.provider_url)
+        return await bite_rpc.get_committees_info(self.provider_url)
 
     async def get_decrypted_transaction_data(self, transaction_hash: str) -> str:
         """
@@ -170,7 +164,7 @@ class BITEMockup:
     This class simulates encryption operations for testing purposes.
     """
 
-    def encrypt_message(self, message: str) -> str:
+    async def encrypt_message(self, message: str) -> str:
         """
         Simulate encryption of a hex-encoded message.
 
@@ -183,9 +177,9 @@ class BITEMockup:
         Raises:
             ValueError: If message is invalid
         """
-        return encrypt.encrypt_message_mockup(message)
+        return await encrypt.encrypt_message_mockup(message)
 
-    def encrypt_message_for_ctx(self, message: str, ctx_submitter_address: str) -> str:
+    async def encrypt_message_for_ctx(self, message: str, ctx_submitter_address: str) -> str:
         """
         Simulate encryption of a message with a submitter address context.
 
@@ -199,9 +193,14 @@ class BITEMockup:
         Raises:
             ValueError: If inputs are invalid
         """
-        return encrypt.encrypt_message_for_ctx_mockup(message, ctx_submitter_address)
+        ctx_address = helper.remove_0x_prefix_if_needed(ctx_submitter_address)
+        if len(ctx_address) != 40:
+            raise ValueError(
+                "Invalid input: 'ctx_submitter_address' field must be exactly 20 bytes"
+            )
+        return await encrypt.encrypt_message_mockup(message)
 
-    def encrypt_transaction(self, tx: Dict[str, str]) -> Dict[str, str]:
+    async def encrypt_transaction(self, tx: Dict[str, str]) -> Dict[str, str]:
         """
         Simulate encryption of a transaction object.
 
@@ -214,4 +213,4 @@ class BITEMockup:
         Raises:
             ValueError: If transaction is invalid
         """
-        return encrypt.encrypt_transaction_mockup(tx)
+        return await encrypt.encrypt_transaction_mockup(tx)

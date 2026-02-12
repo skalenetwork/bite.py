@@ -28,8 +28,19 @@ if [ -d "$LIBS_DIR" ]; then
     echo "LD_LIBRARY_PATH configured for OpenSSL 1.1.1"
 fi
 
-echo "Installing build tool..."
-pip install build
+if [ ! -d "venv" ]; then
+    echo "Creating virtual environment..."
+    python3 -m venv venv
+fi
+
+echo "Activating virtual environment..."
+source venv/bin/activate
+
+echo "Installing dependencies..."
+pip install -q pytest pytest-asyncio build
+
+echo "Running tests..."
+pytest tests/ -v
 
 echo "Building bite-py..."
 python3 -m build .

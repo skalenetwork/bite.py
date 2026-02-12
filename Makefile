@@ -1,7 +1,11 @@
 .PHONY: test lint clean
 
 test:
-	export LD_LIBRARY_PATH=$(PWD)/libs:$$LD_LIBRARY_PATH && pytest tests/
+	@if [ -f venv/bin/activate ]; then \
+		. venv/bin/activate && export LD_LIBRARY_PATH=$(PWD)/libs:$$LD_LIBRARY_PATH && pytest tests/; \
+	else \
+		export LD_LIBRARY_PATH=$(PWD)/libs:$$LD_LIBRARY_PATH && pytest tests/; \
+	fi
 
 lint:
 	ruff check
