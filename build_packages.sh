@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-# This script builds the bite-py package and its skale_te dependency,
+# This script builds the bite-py package and its t_encrypt dependency,
 # placing the resulting wheel files in the final_dist directory.
 
 LIBS_DIR="$(pwd)/libs"

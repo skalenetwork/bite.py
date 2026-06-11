@@ -1,0 +1,99 @@
+name: Build Ubuntu 22 Compatible Package
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+  workflow_dispatch:
+    inputs:
+      upload_to_pypi:
+        description: 'Upload to PyPI'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  build-ubuntu22:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential libffi-dev
+
+    - name: Set Ubuntu 22 version suffix
+      run: |
+        VERSION=$(python3 -c "import tomllib; f=open('pyproject.toml','rb'); data=tomllib.load(f); print(data['project']['version']); f.close()")
+        if [[ ! "$VERSION" == *"+ubuntu22" ]]; then
+          sed -i 's/version = "\([^"]*\)"/version = "\1+ubuntu22"/' pyproject.toml
+        fi
+        echo "Updated version to Ubuntu 22 build"
+        grep "version =" pyproject.toml
+
+    - name: Install dependencies and build
+      run: |
+        python3 -m pip install --upgrade pip
+        pip install -r requirements-ubuntu22-base.txt
+        pip install build wheel
+
+        # Install real t-encrypt package from archive
+        mkdir -p /tmp/t_encrypt_install
+        cd /tmp/t_encrypt_install
+        tar -xf ${{ github.workspace }}/libt_encrypt_python.tar.xz
+        mkdir -p t_encrypt_package/t_encrypt
+        cp libt_encrypt_python.so t_encrypt_package/t_encrypt/libencrypt.so
+        cp ${{ github.workspace }}/libs/libcrypto.so.1.1 ${{ github.workspace }}/libs/libssl.so.1.1 t_encrypt_package/t_encrypt/
+        cp ${{ github.workspace }}/t_encrypt_package/t_encrypt/__init__.py t_encrypt_package/t_encrypt/
+        cp ${{ github.workspace }}/t_encrypt_package/setup.py t_encrypt_package/
+        cd t_encrypt_package
+        pip install .
+        cd ${{ github.workspace }}
+        cp /tmp/openssl-extract/usr/lib/x86_64-linux-gnu/libcrypto.so.1.1 libs/
+        cp /tmp/openssl-extract/usr/lib/x86_64-linux-gnu/libssl.so.1.1 libs/
+        rm -rf /tmp/libssl1.1.deb /tmp/openssl-extract
+
+    - name: Build package
+      run: |
+        export LD_LIBRARY_PATH="$(pwd)/libs:$LD_LIBRARY_PATH"
+        python -m build .
+
+    - name: Build t_encrypt wheel
+      run: |
+        cd /tmp/t_encrypt_install/t_encrypt_package
+        python -m build .
+        cp dist/*.whl ${{ github.workspace }}/dist/
+
+    - name: List built artifacts
+      run: |
+        echo "Built packages:"
+        ls -la dist/
+
+    - name: Upload wheel artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: bite-py-ubuntu22-wheel
+        path: dist/*.whl
+
+    - name: Upload source artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: bite-py-ubuntu22-source
+        path: dist/*.tar.gz
+
+    - name: Upload to PyPI (if triggered manually)
+      if: github.event_name == 'workflow_dispatch' && github.event.inputs.upload_to_pypi == 'true'
+      env:
+        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: |
+        python3 -m pip install twine
+        python3 -m twine upload dist/*
