@@ -3,5 +3,5 @@ python-dotenv>=1.0.0
 rlp>=3.0.0
 requests>=2.31.0
 pytest>=7.0.0
-t-encrypt>=0.0.1
+t-encrypt==0.0.1
 asyncio>=3.0.0
