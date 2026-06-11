@@ -45,7 +45,7 @@ jobs:
         run: uv sync --all-extras
 
       - name: Install requirements
-        run: uv pip install -r requirements.txt
+        run: uv pip install --find-links t_encrypt_package/dist -r requirements.txt
 
       - name: Setup OpenSSL 1.1.1 and build packages
         run: bash build_packages.sh
