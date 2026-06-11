@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "bite-py"
 version = "0.8.0.dev4"
-description = "Python Library to interact with BITE protocol (Ubuntu 22 compatible build)"
+description = "Python Library to interact with BITE protocol"
 readme = "README.md"
 authors = [
     {name = "SKALE Labs", email = "support@skalelabs.com"}
@@ -18,11 +18,12 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries",
     "Topic :: Security :: Cryptography",
     "Operating System :: POSIX :: Linux",
 ]
-keywords = ["SKALE", "blockchain", "BITE", "threshold", "cryptography", "encryption", "ubuntu22"]
+keywords = ["SKALE", "blockchain", "BITE", "threshold", "cryptography", "encryption"]
 requires-python = ">=3.11"
 dependencies = [
     "rlp>=3.0.0",

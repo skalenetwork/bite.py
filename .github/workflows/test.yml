@@ -9,7 +9,11 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
     env:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
@@ -31,7 +35,7 @@ jobs:
       run: uv pip install -r requirements.txt
 
     - name: Setup OpenSSL 1.1.1 and build packages
-      run: bash build_packages.sh
+      run: bash scripts/build_packages.sh
 
     - name: Verify libencrypt.so existence
       run: |
@@ -53,3 +57,4 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ./coverage.xml
+        flags: ${{ matrix.os }}

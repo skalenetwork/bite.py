@@ -17,16 +17,31 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with SKALE.py.  If not, see <https://www.gnu.org/licenses/>.
 
-name: Build PyPI Artifacts (Ubuntu 22/24)
+name: Build and publish
 
 on:
   workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish to PyPI
+        required: false
+        default: false
+        type: boolean
   push:
     branches: ["main", "develop"]
+    tags:
+      - 'v*'
 
 jobs:
-  build-ubuntu-22:
-    runs-on: ubuntu-22.04
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            artifact_name: ubuntu-22
+          - os: ubuntu-24.04
+            artifact_name: ubuntu-24
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -36,7 +51,7 @@ jobs:
           python-version: "3.13"
 
       - name: Build distributions
-        run: bash build_packages.sh
+        run: bash scripts/build_packages.sh
 
       - name: Validate distributions
         run: |
@@ -45,30 +60,33 @@ jobs:
 
       - name: Upload dist artifacts
         uses: actions/upload-artifact@v4
+        with:
+          name: pypi-dist-${{ matrix.artifact_name }}
+          path: dist/*
+
+  publish:
+    runs-on: ubuntu-22.04
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.publish == 'true'
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Download Ubuntu 22 distributions
+        uses: actions/download-artifact@v4
         with:
           name: pypi-dist-ubuntu-22
-          path: dist/*
-
-  build-ubuntu-24:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-
-      - name: Build distributions
-        run: bash build_packages.sh
+          path: dist
 
       - name: Validate distributions
         run: |
           python -m pip install --upgrade pip twine
           python -m twine check dist/*
 
-      - name: Upload dist artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: pypi-dist-ubuntu-24
-          path: dist/*
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: python -m twine upload dist/*
