@@ -30,21 +30,21 @@ fi
 
 if [ ! -d "venv" ]; then
     echo "Creating virtual environment..."
-    python3 -m venv venv
+    python -m venv venv
 fi
 
 echo "Activating virtual environment..."
 source venv/bin/activate
 
 echo "Installing dependencies..."
-pip install -q --find-links t_encrypt_package/dist -r requirements.txt
+pip install -q -r requirements.txt
 pip install -q pytest pytest-asyncio build
 
 echo "Running tests..."
 pytest tests/ -v
 
 echo "Building bite-py..."
-python3 -m build .
+python -m build .
 
 echo "Build complete! Files are in 'dist' directory:"
 ls -1 dist/
