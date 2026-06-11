@@ -24,9 +24,9 @@ BITE Python Library - Encryption Module
 from typing import Any, Dict, List, Optional
 
 import rlp
-from skale_te import encrypt_message as lib_encrypt_message
-from skale_te import encrypt_message_dual_key as lib_encrypt_message_dual_key
-from skale_te import encrypt_message_mockup as lib_encrypt_message_mockup
+from t_encrypt import encrypt_message as lib_encrypt_message
+from t_encrypt import encrypt_message_dual_key as lib_encrypt_message_dual_key
+from t_encrypt import encrypt_message_mockup as lib_encrypt_message_mockup
 
 from ..utils import constants, helper, logger
 

@@ -28,7 +28,7 @@ import os
 def preload_dependencies(lib_name: str = 'libcrypto.so.1.1') -> None:
     """
     Preload bundled libraries (e.g. libcrypto) if present.
-    This is required for skale_te to find its dependencies when installed as a wheel.
+    This is required for t_encrypt to find its dependencies when installed as a wheel.
 
     Args:
         lib_name: Name of the library to preload. Defaults to 'libcrypto.so.1.1'.
