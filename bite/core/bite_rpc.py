@@ -21,8 +21,8 @@
 BITE Python Library - RPC Client
 """
 
-import re
 import asyncio
+import re
 from typing import Any, Dict, List
 
 import requests
