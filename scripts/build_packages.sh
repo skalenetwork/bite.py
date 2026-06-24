@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-# This script builds the bite-py package and its skale_te dependency,
-# placing the resulting wheel files in the final_dist directory.
-
+ # This script builds the bite-py package,
+ # placing the resulting wheel files in the dist directory.
+ 
 LIBS_DIR="$(pwd)/libs"
 mkdir -p "$LIBS_DIR"
 

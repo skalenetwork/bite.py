@@ -76,6 +76,13 @@ class BITE:
             ValueError: If inputs are invalid
             Exception: If encryption fails
         """
+        ctx_address = helper.remove_0x_prefix_if_needed(ctx_submitter_address)
+        helper.validate_hex_string(ctx_address)
+        if len(ctx_address) != 40:
+            raise ValueError(
+                "Invalid input: 'ctx_submitter_address' field must be exactly 20 bytes"
+            )
+
         committees = await self.get_committees_info()
         return await encrypt.encrypt_message(message, committees, ctx_submitter_address)
 
@@ -194,6 +201,7 @@ class BITEMockup:
             ValueError: If inputs are invalid
         """
         ctx_address = helper.remove_0x_prefix_if_needed(ctx_submitter_address)
+        helper.validate_hex_string(ctx_address)
         if len(ctx_address) != 40:
             raise ValueError(
                 "Invalid input: 'ctx_submitter_address' field must be exactly 20 bytes"

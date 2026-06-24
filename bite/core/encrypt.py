@@ -60,20 +60,8 @@ async def encrypt_transaction(
 
         rlp_encoded_data = _rlp_encode_transaction_data(tx_to, tx_data)
 
-        sanitized_aad_aes = (
-            helper.remove_0x_prefix_if_needed(aad_aes) if aad_aes else None
-        )
-        sanitized_aad_te = (
-            helper.remove_0x_prefix_if_needed(aad_te) if aad_te else None
-        )
-
-        if sanitized_aad_aes:
-            helper.validate_hex_string(sanitized_aad_aes)
-        if sanitized_aad_te:
-            helper.validate_hex_string(sanitized_aad_te)
-
         encrypted_data = await encrypt_message(
-            rlp_encoded_data, committees, sanitized_aad_te, sanitized_aad_aes
+            rlp_encoded_data, committees, aad_te, aad_aes
         )
 
         bite_gas_limit = tx.get('gas_limit', constants.DEFAULT_GAS_LIMIT)
@@ -162,6 +150,9 @@ async def encrypt_message(
             helper.validate_hex_string(sanitized_aad_aes)
         if sanitized_aad_te:
             helper.validate_hex_string(sanitized_aad_te)
+
+        if len(committees) not in (1, 2):
+            raise ValueError('Invalid input: committees must contain exactly 1 or 2 items')
 
         if len(committees) == 1:
             public_key_response = committees[0]

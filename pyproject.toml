@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bite-py"
-version = "0.8.0.dev4"
+version = "0.8.1.dev0"
 description = "Python Library to interact with BITE protocol"
 readme = "README.md"
 authors = [
@@ -29,6 +29,7 @@ dependencies = [
     "rlp>=3.0.0",
     "requests>=2.31.0",
     "pycryptodome>=3.19.0",
+    "t-encrypt==0.0.1",
 ]
 
 [project.optional-dependencies]

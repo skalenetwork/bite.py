@@ -22,6 +22,7 @@ BITE Python Library - RPC Client
 """
 
 import re
+import asyncio
 from typing import Any, Dict, List
 
 import requests
@@ -136,7 +137,8 @@ async def _send_rpc_request(endpoint: str, request_body: Dict[str, Any]) -> Any:
     try:
         helper.validate_url(endpoint)
 
-        response = requests.post(
+        response = await asyncio.to_thread(
+            requests.post,
             endpoint,
             json=request_body,
             headers={'Content-Type': 'application/json'},
