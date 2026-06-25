@@ -19,7 +19,13 @@
 
 name: Build and publish
 
+permissions:
+  contents: write
+
 on:
+  pull_request:
+    types: [closed]
+    branches: ["main", "develop"]
   workflow_dispatch:
     inputs:
       publish:
@@ -42,6 +48,7 @@ jobs:
           - os: ubuntu-24.04
             artifact_name: ubuntu-24
     runs-on: ${{ matrix.os }}
+    if: github.event_name != 'pull_request' || github.event.pull_request.merged
     steps:
       - uses: actions/checkout@v4
 
@@ -49,6 +56,40 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
+
+      - name: Calculate version
+        run: |
+          RAW_VERSION=$(python - <<'PY'
+          import tomllib
+          from pathlib import Path
+          data = tomllib.loads(Path('pyproject.toml').read_text())
+          print(data['project']['version'])
+          PY
+          )
+
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            BASE_VERSION="${RAW_VERSION%%.dev*}"
+            VERSION="${BASE_VERSION}.dev${GITHUB_RUN_NUMBER}${GITHUB_RUN_ATTEMPT}"
+          fi
+
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+
+      - name: Set package version
+        run: |
+          python - <<'PY'
+          import os
+          import re
+          from pathlib import Path
+
+          path = Path('pyproject.toml')
+          content = path.read_text()
+          updated = re.sub(r'^version = ".*"$', f'version = "{os.environ["VERSION"]}"', content, count=1, flags=re.MULTILINE)
+          if updated == content:
+            raise SystemExit('Version field not found in pyproject.toml')
+          path.write_text(updated)
+          PY
 
       - name: Build distributions
         run: bash scripts/build_packages.sh
@@ -67,12 +108,39 @@ jobs:
   publish:
     runs-on: ubuntu-22.04
     needs: build
-    if: startsWith(github.ref, 'refs/tags/v') || github.event.inputs.publish == 'true'
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.merged) ||
+      startsWith(github.ref, 'refs/tags/v') ||
+      github.event.inputs.publish == 'true'
     steps:
+      - uses: actions/checkout@v4
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
+
+      - name: Calculate version
+        run: |
+          RAW_VERSION=$(python - <<'PY'
+          import tomllib
+          from pathlib import Path
+          data = tomllib.loads(Path('pyproject.toml').read_text())
+          print(data['project']['version'])
+          PY
+          )
+
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+            RELEASE_TAG="${GITHUB_REF_NAME}"
+          else
+            BASE_VERSION="${RAW_VERSION%%.dev*}"
+            VERSION="${BASE_VERSION}.dev${GITHUB_RUN_NUMBER}${GITHUB_RUN_ATTEMPT}"
+            RELEASE_TAG="v${VERSION}"
+          fi
+
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+          echo "RELEASE_TAG=${RELEASE_TAG}" >> "$GITHUB_ENV"
 
       - name: Download Ubuntu 22 distributions
         uses: actions/download-artifact@v4
@@ -90,3 +158,11 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: python -m twine upload dist/*
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.RELEASE_TAG }}
+          generate_release_notes: true
+          files: dist/*
