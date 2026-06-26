@@ -21,7 +21,7 @@
 BITE Python Library - Main BITE Class
 """
 
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from .core import bite_rpc, encrypt
 from .utils import helper
@@ -58,14 +58,40 @@ class BITE:
             ValueError: If message is invalid
             Exception: If encryption fails
         """
-        return await encrypt.encrypt_message(message, self.provider_url)
+        committees = await self.get_committees_info()
+        return await encrypt.encrypt_message(message, committees)
+
+    async def encrypt_message_for_ctx(self, message: str, ctx_submitter_address: str) -> str:
+        """
+        Encrypt a hex-encoded message using BLS public key for CTX.
+
+        Args:
+            message: Hex string (with or without 0x prefix)
+            ctx_submitter_address: Smart Contract Address for aadTE
+
+        Returns:
+            Encrypted message as hex string
+
+        Raises:
+            ValueError: If inputs are invalid
+            Exception: If encryption fails
+        """
+        ctx_address = helper.remove_0x_prefix_if_needed(ctx_submitter_address)
+        helper.validate_hex_string(ctx_address)
+        if len(ctx_address) != 40:
+            raise ValueError(
+                "Invalid input: 'ctx_submitter_address' field must be exactly 20 bytes"
+            )
+
+        committees = await self.get_committees_info()
+        return await encrypt.encrypt_message(message, committees, ctx_submitter_address)
 
     async def encrypt_transaction(self, tx: Dict[str, str]) -> Dict[str, str]:
         """
         Encrypt a transaction object using BLS public key.
 
         Args:
-            tx: The transaction to encrypt (dict with 'to', 'data', optional 'gas_limit')
+            tx: The transaction to encrypt (dict with 'to', 'data', required 'gas_limit')
 
         Returns:
             The encrypted transaction with modified 'data' and 'to' fields
@@ -74,19 +100,24 @@ class BITE:
             ValueError: If transaction is invalid
             Exception: If encryption fails
         """
-        return await encrypt.encrypt_transaction(tx, self.provider_url)
+        committees = await self.get_committees_info()
+        return await encrypt.encrypt_transaction(tx, committees)
 
-    def encrypt_transaction_with_committee_info(
-        self,
+    @staticmethod
+    async def encrypt_transaction_with_committee_info(
         tx: Dict[str, str],
-        committees: List[helper.CommonPublicKeyResponse]
+        committees: List[helper.CommonPublicKeyResponse],
+        aad_te: Optional[str] = None,
+        aad_aes: Optional[str] = None
     ) -> Dict[str, str]:
         """
         Encrypt a transaction object using provided committee info.
 
         Args:
-            tx: The transaction to encrypt (dict with 'to', 'data', optional 'gas_limit')
+            tx: The transaction to encrypt (dict with 'to', 'data', required 'gas_limit')
             committees: List of committee info objects
+            aad_te: Optional TE Additional Authenticated Data
+            aad_aes: Optional AES Additional Authenticated Data
 
         Returns:
             The encrypted transaction with modified 'data' and 'to' fields
@@ -95,9 +126,14 @@ class BITE:
             ValueError: If transaction or committees are invalid
             Exception: If encryption fails
         """
-        return encrypt.encrypt_transaction_with_committee_info(tx, committees)
+        return await encrypt.encrypt_transaction(
+            tx,
+            committees,
+            aad_te=aad_te,
+            aad_aes=aad_aes
+        )
 
-    def get_committees_info(self) -> List[helper.CommonPublicKeyResponse]:
+    async def get_committees_info(self) -> List[helper.CommonPublicKeyResponse]:
         """
         Fetch the committees info from the configured endpoint.
 
@@ -107,7 +143,7 @@ class BITE:
         Raises:
             Exception: If RPC request fails
         """
-        return bite_rpc.get_committees_info(self.provider_url)
+        return await bite_rpc.get_committees_info(self.provider_url)
 
     async def get_decrypted_transaction_data(self, transaction_hash: str) -> str:
         """
@@ -135,7 +171,7 @@ class BITEMockup:
     This class simulates encryption operations for testing purposes.
     """
 
-    def encrypt_message(self, message: str) -> str:
+    async def encrypt_message(self, message: str) -> str:
         """
         Simulate encryption of a hex-encoded message.
 
@@ -148,14 +184,36 @@ class BITEMockup:
         Raises:
             ValueError: If message is invalid
         """
-        return encrypt.encrypt_message_mockup(message)
+        return await encrypt.encrypt_message_mockup(message)
 
-    def encrypt_transaction(self, tx: Dict[str, str]) -> Dict[str, str]:
+    async def encrypt_message_for_ctx(self, message: str, ctx_submitter_address: str) -> str:
+        """
+        Simulate encryption of a message with a submitter address context.
+
+        Args:
+            message: Hex string (with or without 0x prefix)
+            ctx_submitter_address: The submitter address as hex string
+
+        Returns:
+            Mock encrypted message as hex string
+
+        Raises:
+            ValueError: If inputs are invalid
+        """
+        ctx_address = helper.remove_0x_prefix_if_needed(ctx_submitter_address)
+        helper.validate_hex_string(ctx_address)
+        if len(ctx_address) != 40:
+            raise ValueError(
+                "Invalid input: 'ctx_submitter_address' field must be exactly 20 bytes"
+            )
+        return await encrypt.encrypt_message_mockup(message)
+
+    async def encrypt_transaction(self, tx: Dict[str, str]) -> Dict[str, str]:
         """
         Simulate encryption of a transaction object.
 
         Args:
-            tx: The transaction to encrypt (dict with 'to', 'data', optional 'gas_limit')
+            tx: The transaction to encrypt (dict with 'to', 'data', required 'gas_limit')
 
         Returns:
             The mock encrypted transaction with modified 'data' and 'to' fields
@@ -163,4 +221,4 @@ class BITEMockup:
         Raises:
             ValueError: If transaction is invalid
         """
-        return encrypt.encrypt_transaction_mockup(tx)
+        return await encrypt.encrypt_transaction_mockup(tx)

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bite-py"
-version = "0.7.0"
+version = "0.8.1"
 description = "Python Library to interact with BITE protocol"
 readme = "README.md"
 authors = [
@@ -18,8 +18,10 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries",
     "Topic :: Security :: Cryptography",
+    "Operating System :: POSIX :: Linux",
 ]
 keywords = ["SKALE", "blockchain", "BITE", "threshold", "cryptography", "encryption"]
 requires-python = ">=3.11"
@@ -27,6 +29,7 @@ dependencies = [
     "rlp>=3.0.0",
     "requests>=2.31.0",
     "pycryptodome>=3.19.0",
+    "t-encrypt==0.0.1",
 ]
 
 [project.optional-dependencies]
@@ -54,6 +57,9 @@ where = ["."]
 include = ["bite*"]
 exclude = ["tests*", "examples*"]
 
+[tool.setuptools.package-data]
+"bite" = ["lib/*.so*"]
+
 [tool.mypy]
 python_version = "3.11"
 warn_unused_configs = true
@@ -75,3 +81,4 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
+asyncio_mode = "auto"
