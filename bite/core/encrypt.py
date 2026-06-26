@@ -64,7 +64,7 @@ async def encrypt_transaction(
             rlp_encoded_data, committees, aad_te, aad_aes
         )
 
-        bite_gas_limit = tx.get('gas_limit', constants.DEFAULT_GAS_LIMIT)
+        bite_gas_limit = _extract_required_gas_limit(tx)
 
         return {
             **tx,
@@ -100,7 +100,7 @@ async def encrypt_transaction_mockup(tx: Dict[str, Any]) -> Dict[str, Any]:
 
         encrypted_data = await encrypt_message_mockup(rlp_encoded_data)
 
-        bite_gas_limit = tx.get('gas_limit', constants.DEFAULT_GAS_LIMIT)
+        bite_gas_limit = _extract_required_gas_limit(tx)
 
         return {
             **tx,
@@ -306,3 +306,9 @@ def _rlp_encode_message_data(data: List[Any]) -> str:
     except Exception as error:
         logger.error('Error RLP encoding message data: %s', error)
         raise RuntimeError('Failed to RLP encode message data') from error
+
+
+def _extract_required_gas_limit(tx: Dict[str, Any]) -> Any:
+    if 'gas_limit' not in tx:
+        raise ValueError("Invalid input: 'gas_limit' field is required")
+    return tx['gas_limit']

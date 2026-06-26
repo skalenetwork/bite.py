@@ -76,11 +76,6 @@ class TestConstants:
         """Test BITE address constant."""
         assert constants.BITE_ADDRESS == '0x42495445204D452049274d20454e435259505444'
 
-    def test_default_gas_limit(self):
-        """Test default gas limit constant."""
-        assert constants.DEFAULT_GAS_LIMIT == 500000
-
-
 @pytest.mark.asyncio
 class TestBITEMockup:
     """Tests for BITEMockup class."""
@@ -108,16 +103,18 @@ class TestBITEMockup:
     async def test_encrypt_transaction(self):
         """Test mock transaction encryption."""
         bite_mock = BITEMockup()
+        gas_limit = '0x100000'
         tx = {
             'to': '0x1234567890123456789012345678901234567890',
-            'data': '0x1234567890abcdef'
+            'data': '0x1234567890abcdef',
+            'gas_limit': gas_limit
         }
 
         encrypted_tx = await bite_mock.encrypt_transaction(tx)
 
         assert encrypted_tx['to'] == constants.BITE_ADDRESS
         assert encrypted_tx['data'].startswith('0x')
-        assert encrypted_tx['gas_limit'] == constants.DEFAULT_GAS_LIMIT
+        assert encrypted_tx['gas_limit'] == gas_limit
 
     async def test_encrypt_transaction_with_gas_limit(self):
         """Test mock transaction encryption with custom gas limit."""
@@ -150,4 +147,15 @@ class TestBITEMockup:
         tx = {'data': '0x1234567890abcdef'}
 
         with pytest.raises(ValueError):
+            await bite_mock.encrypt_transaction(tx)
+
+    async def test_encrypt_transaction_missing_gas_limit(self):
+        """Test transaction encryption fails when gas_limit is missing."""
+        bite_mock = BITEMockup()
+        tx = {
+            'to': '0x1234567890123456789012345678901234567890',
+            'data': '0x1234567890abcdef'
+        }
+
+        with pytest.raises(ValueError, match="gas_limit"):
             await bite_mock.encrypt_transaction(tx)

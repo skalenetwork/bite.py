@@ -91,7 +91,7 @@ class BITE:
         Encrypt a transaction object using BLS public key.
 
         Args:
-            tx: The transaction to encrypt (dict with 'to', 'data', optional 'gas_limit')
+            tx: The transaction to encrypt (dict with 'to', 'data', required 'gas_limit')
 
         Returns:
             The encrypted transaction with modified 'data' and 'to' fields
@@ -114,7 +114,7 @@ class BITE:
         Encrypt a transaction object using provided committee info.
 
         Args:
-            tx: The transaction to encrypt (dict with 'to', 'data', optional 'gas_limit')
+            tx: The transaction to encrypt (dict with 'to', 'data', required 'gas_limit')
             committees: List of committee info objects
             aad_te: Optional TE Additional Authenticated Data
             aad_aes: Optional AES Additional Authenticated Data
@@ -213,7 +213,7 @@ class BITEMockup:
         Simulate encryption of a transaction object.
 
         Args:
-            tx: The transaction to encrypt (dict with 'to', 'data', optional 'gas_limit')
+            tx: The transaction to encrypt (dict with 'to', 'data', required 'gas_limit')
 
         Returns:
             The mock encrypted transaction with modified 'data' and 'to' fields

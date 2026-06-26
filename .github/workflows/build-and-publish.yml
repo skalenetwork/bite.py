@@ -59,13 +59,7 @@ jobs:
 
       - name: Calculate version
         run: |
-          RAW_VERSION=$(python - <<'PY'
-          import tomllib
-          from pathlib import Path
-          data = tomllib.loads(Path('pyproject.toml').read_text())
-          print(data['project']['version'])
-          PY
-          )
+          RAW_VERSION=$(grep '^version = ' pyproject.toml | cut -d'"' -f2)
 
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             VERSION="${GITHUB_REF_NAME#v}"
@@ -75,21 +69,6 @@ jobs:
           fi
 
           echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
-
-      - name: Set package version
-        run: |
-          python - <<'PY'
-          import os
-          import re
-          from pathlib import Path
-
-          path = Path('pyproject.toml')
-          content = path.read_text()
-          updated = re.sub(r'^version = ".*"$', f'version = "{os.environ["VERSION"]}"', content, count=1, flags=re.MULTILINE)
-          if updated == content:
-            raise SystemExit('Version field not found in pyproject.toml')
-          path.write_text(updated)
-          PY
 
       - name: Build distributions
         run: bash scripts/build_packages.sh
@@ -122,13 +101,7 @@ jobs:
 
       - name: Calculate version
         run: |
-          RAW_VERSION=$(python - <<'PY'
-          import tomllib
-          from pathlib import Path
-          data = tomllib.loads(Path('pyproject.toml').read_text())
-          print(data['project']['version'])
-          PY
-          )
+          RAW_VERSION=$(grep '^version = ' pyproject.toml | cut -d'"' -f2)
 
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             VERSION="${GITHUB_REF_NAME#v}"

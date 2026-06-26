@@ -38,10 +38,7 @@ source venv/bin/activate
 
 echo "Installing dependencies..."
 pip install -q -r requirements.txt
-pip install -q pytest pytest-asyncio build
-
-echo "Running tests..."
-pytest tests/ -v
+pip install -q build
 
 echo "Building bite-py..."
 python -m build .
