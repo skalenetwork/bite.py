@@ -137,8 +137,6 @@ jobs:
           : "${PIP_USERNAME?Need to set PIP_USERNAME}"
           : "${PIP_PASSWORD?Need to set PIP_PASSWORD}"
 
-          set -e
-
           echo "Uploading to pypi"
           uv publish --username "$PIP_USERNAME" --password "$PIP_PASSWORD" dist/*
 
