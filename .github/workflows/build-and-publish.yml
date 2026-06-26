@@ -126,11 +126,19 @@ jobs:
           python -m pip install --upgrade pip twine
           python -m twine check dist/*
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
       - name: Publish to PyPI
         env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        run: python -m twine upload dist/*
+          PIP_USERNAME: ${{ secrets.PIP_USERNAME }}
+          PIP_PASSWORD: ${{ secrets.PIP_PASSWORD }}
+        run: |
+          : "${PIP_USERNAME?Need to set PIP_USERNAME}"
+          : "${PIP_PASSWORD?Need to set PIP_PASSWORD}"
+
+          echo "Uploading to pypi"
+          uv publish --username "$PIP_USERNAME" --password "$PIP_PASSWORD" dist/*
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
