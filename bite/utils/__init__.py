@@ -21,13 +21,12 @@
 BITE Python Library - Utils package
 """
 
-from .constants import BITE_ADDRESS, DEFAULT_GAS_LIMIT, NODE_ENV
+from .constants import BITE_ADDRESS, NODE_ENV
 from .helper import remove_0x_prefix_if_needed, validate_hex_string, validate_url
 from .logger import logger
 
 __all__ = [
     'BITE_ADDRESS',
-    'DEFAULT_GAS_LIMIT',
     'NODE_ENV',
     'remove_0x_prefix_if_needed',
     'validate_url',
