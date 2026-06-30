@@ -115,11 +115,17 @@ jobs:
           echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
           echo "RELEASE_TAG=${RELEASE_TAG}" >> "$GITHUB_ENV"
 
-      - name: Download Ubuntu 22 distributions
+      - name: Download Ubuntu 24 distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: pypi-dist-ubuntu-24
+          path: dist
+
+      - name: Download Ubuntu 22 distributions for release
         uses: actions/download-artifact@v4
         with:
           name: pypi-dist-ubuntu-22
-          path: dist
+          path: dist-ubuntu-22
 
       - name: Validate distributions
         run: |
@@ -138,7 +144,7 @@ jobs:
           : "${PIP_PASSWORD?Need to set PIP_PASSWORD}"
 
           echo "Uploading to pypi"
-          uv publish --username "$PIP_USERNAME" --password "$PIP_PASSWORD" dist/*
+          uv publish --username "$PIP_USERNAME" --password "$PIP_PASSWORD" dist/*.whl
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
@@ -146,4 +152,6 @@ jobs:
           tag_name: ${{ env.RELEASE_TAG }}
           name: ${{ env.RELEASE_TAG }}
           generate_release_notes: true
-          files: dist/*
+          files: |
+            dist/*
+            dist-ubuntu-22/*
