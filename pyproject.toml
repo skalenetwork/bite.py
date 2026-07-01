@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "bite-py"
+name = "bite.py"
 version = "0.8.1"
-description = "Python Library to interact with BITE protocol"
+description = "Python Library to interact with BITE protocol on Skale network"
 readme = "README.md"
 authors = [
     {name = "SKALE Labs", email = "support@skalelabs.com"}
