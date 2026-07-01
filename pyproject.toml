@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "skale-bite"
-version = "0.8.1"
+version = "0.8.1.dev0"
 description = "Python Library to interact with BITE protocol on Skale network"
 readme = "README.md"
 authors = [
