@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "bite.py"
+name = "bite.py-core"
 version = "0.8.1"
 description = "Python Library to interact with BITE protocol on Skale network"
 readme = "README.md"
@@ -48,9 +48,9 @@ linter = [
     "importlib-metadata<9.0",
 ]
 [project.urls]
-Homepage = "https://github.com/skalenetwork/bite-py"
-Repository = "https://github.com/skalenetwork/bite-py"
-Documentation = "https://github.com/skalenetwork/bite-py"
+Homepage = "https://github.com/skalenetwork/bite.py"
+Repository = "https://github.com/skalenetwork/bite.py"
+Documentation = "https://github.com/skalenetwork/bite.py/tree/develop/examples"
 
 [tool.setuptools.packages.find]
 where = ["."]
