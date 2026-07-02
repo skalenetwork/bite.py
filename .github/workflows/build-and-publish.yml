@@ -59,16 +59,9 @@ jobs:
 
       - name: Calculate version
         run: |
-          RAW_VERSION=$(grep '^version = ' pyproject.toml | cut -d'"' -f2)
-
-          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
-            VERSION="${GITHUB_REF_NAME#v}"
-          else
-            BASE_VERSION="${RAW_VERSION%%.dev*}"
-            VERSION="${BASE_VERSION}.dev${GITHUB_RUN_NUMBER}${GITHUB_RUN_ATTEMPT}"
-          fi
-
-          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+          export BRANCH=${GITHUB_REF##*/}
+          export VERSION=$(bash ./scripts/calculate_version.sh)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Build distributions
         run: bash scripts/build_packages.sh
