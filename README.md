@@ -1,7 +1,7 @@
-# bite-py
+# skale-bite
 
 ## Description
-`bite-py` is a Python library for encrypting transaction data using the BITE (Blockchain Integrated Threshold Encryption) protocol. BITE is an extension of the SKALE provably secure consensus protocol that enables threshold encryption of transaction data.
+`skale-bite` is a Python library for encrypting transaction data using the BITE (Blockchain Integrated Threshold Encryption) protocol. BITE is an extension of the SKALE provably secure consensus protocol that enables threshold encryption of transaction data.
 
 The library provides functionality to:
 - Encrypt transaction data using BLS threshold encryption public keys
@@ -20,16 +20,15 @@ During committee rotation periods, the library automatically handles dual encryp
 Install the library using pip:
 
 ```bash
-pip install bite-py
+pip install skale-bite
 ```
 
 ## Usage
 
 > ⚠️ **Warning**  
-> When passing a transaction to `bite-py`, it is necessary to set the gas_limit field manually.
+> When passing a transaction to `bite`, it is necessary to set the gas_limit field manually.
 > This is because estimateGas does not return a proper value for encrypted transactions.
-> If gas_limit is omitted, `bite-py` will automatically set it to **300000**.
-> For best results, always calculate and set a gas limit appropriate for your specific transaction.
+> Always calculate and set `gas_limit` manually for your specific transaction.
 
 Here is an example of how to use the library to encrypt transaction data:
 
@@ -147,8 +146,8 @@ asyncio.run(test())
 ### Setup
 ```bash
 # Clone the repository
-git clone https://github.com/skalenetwork/bite-py
-cd bite-py
+git clone https://github.com/skalenetwork/bite.py
+cd bite.py
 
 # Install in development mode
 pip install -e ".[dev]"

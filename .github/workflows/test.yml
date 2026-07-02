@@ -1,6 +1,7 @@
 name: Test
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main", "develop" ]
   pull_request:
@@ -8,24 +9,33 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-24.04
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
     env:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
     steps:
     - uses: actions/checkout@v4
 
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.13"
+
     - name: Install uv
       uses: astral-sh/setup-uv@v5
-
-    - name: Set up Python
-      run: uv python install 3.11
 
     - name: Install dependencies
       run: uv sync --all-extras
 
-    - name: Install local skale_te
-      run: uv pip install ./local_dependencies/skale_te_pkg
+    - name: Install requirements
+      run: uv pip install -r requirements.txt
+
+    - name: Setup OpenSSL 1.1.1 and build packages
+      run: bash scripts/build_packages.sh
 
     - name: Verify libencrypt.so existence
       run: |
@@ -40,10 +50,11 @@ jobs:
       run: uv run mypy bite/
 
     - name: Run tests with coverage
-      run: uv run --with pytest-cov pytest --cov=bite tests/test_bite.py --cov-report=xml
+      run: export LD_LIBRARY_PATH=$(pwd)/libs:$LD_LIBRARY_PATH && uv run --with pytest-cov pytest --cov=bite tests/ --cov-report=xml
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ./coverage.xml
+        flags: ${{ matrix.os }}

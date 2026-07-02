@@ -21,6 +21,7 @@
 BITE Python Library - RPC Client
 """
 
+import asyncio
 import re
 from typing import Any, Dict, List
 
@@ -54,14 +55,14 @@ async def get_decrypted_transaction_data(endpoint: str, transaction_hash: str) -
             'id': 1
         }
 
-        result = _send_rpc_request(endpoint, request_body)
+        result = await _send_rpc_request(endpoint, request_body)
         return result
     except Exception as error:
         logger.error('Error fetching decrypted transaction data: %s', error)
         raise
 
 
-def get_committees_info(endpoint: str) -> List[helper.CommonPublicKeyResponse]:
+async def get_committees_info(endpoint: str) -> List[helper.CommonPublicKeyResponse]:
     """
     Request the committees info via JSON-RPC.
 
@@ -83,7 +84,7 @@ def get_committees_info(endpoint: str) -> List[helper.CommonPublicKeyResponse]:
             'id': 1
         }
 
-        result = _send_rpc_request(endpoint, request_body)
+        result = await _send_rpc_request(endpoint, request_body)
 
         if not isinstance(result, list):
             raise ValueError('Result is not an array')
@@ -118,7 +119,7 @@ def get_committees_info(endpoint: str) -> List[helper.CommonPublicKeyResponse]:
         raise
 
 
-def _send_rpc_request(endpoint: str, request_body: Dict[str, Any]) -> Any:
+async def _send_rpc_request(endpoint: str, request_body: Dict[str, Any]) -> Any:
     """
     Send JSON-RPC request to endpoint.
 
@@ -136,7 +137,8 @@ def _send_rpc_request(endpoint: str, request_body: Dict[str, Any]) -> Any:
     try:
         helper.validate_url(endpoint)
 
-        response = requests.post(
+        response = await asyncio.to_thread(
+            requests.post,
             endpoint,
             json=request_body,
             headers={'Content-Type': 'application/json'},
