@@ -63,6 +63,11 @@ jobs:
           export VERSION=$(bash ./scripts/calculate_version.sh)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
+      - name: Set package version
+        run: |
+          sed -i "s/^version = \".*\"$/version = \"${VERSION}\"/" pyproject.toml
+          grep '^version = ' pyproject.toml
+
       - name: Build distributions
         run: bash scripts/build_packages.sh
 
@@ -94,14 +99,12 @@ jobs:
 
       - name: Calculate version
         run: |
-          RAW_VERSION=$(grep '^version = ' pyproject.toml | cut -d'"' -f2)
-
           if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             VERSION="${GITHUB_REF_NAME#v}"
             RELEASE_TAG="${GITHUB_REF_NAME}"
           else
-            BASE_VERSION="${RAW_VERSION%%.dev*}"
-            VERSION="${BASE_VERSION}.dev${GITHUB_RUN_NUMBER}${GITHUB_RUN_ATTEMPT}"
+            export BRANCH=${GITHUB_REF##*/}
+            export VERSION=$(bash ./scripts/calculate_version.sh)
             RELEASE_TAG="v${VERSION}"
           fi
 
