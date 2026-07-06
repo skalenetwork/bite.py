@@ -16,7 +16,7 @@ if [ -z $VERSION ]; then
 fi
 
 
-if [[ $BRANCH == 'stable' ]]; then
+if [[ $BRANCH == 'main' ]]; then
     echo $VERSION
     exit 0
 elif [[ $BRANCH == 'develop' ]]; then
