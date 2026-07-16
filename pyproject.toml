@@ -29,7 +29,7 @@ dependencies = [
     "rlp>=3.0.0",
     "requests>=2.31.0",
     "pycryptodome>=3.19.0",
-    "t-encrypt==0.0.1",
+    "t-encrypt==0.0.2",
 ]
 
 [project.optional-dependencies]
