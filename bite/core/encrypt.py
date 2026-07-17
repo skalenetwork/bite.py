@@ -309,6 +309,8 @@ def _rlp_encode_message_data(data: List[Any]) -> str:
 
 
 def _extract_required_gas_limit(tx: Dict[str, Any]) -> Any:
-    if 'gas_limit' not in tx:
-        raise ValueError("Invalid input: 'gas_limit' field is required")
-    return tx['gas_limit']
+    if 'gas' in tx:
+        return tx['gas']
+    if 'gas_limit' in tx:
+        return tx['gas_limit']
+    raise ValueError("Invalid input: 'gas' or 'gas_limit' field is required")
