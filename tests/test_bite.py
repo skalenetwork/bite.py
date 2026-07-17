@@ -130,6 +130,20 @@ class TestBITEMockup:
 
         assert encrypted_tx['gas_limit'] == custom_gas
 
+    async def test_encrypt_transaction_with_gas(self):
+        """Test mock transaction encryption with gas field."""
+        bite_mock = BITEMockup()
+        gas = '0x100000'
+        tx = {
+            'to': '0x1234567890123456789012345678901234567890',
+            'data': '0x1234567890abcdef',
+            'gas': gas
+        }
+
+        encrypted_tx = await bite_mock.encrypt_transaction(tx)
+
+        assert encrypted_tx['gas_limit'] == gas
+
     async def test_encrypt_transaction_invalid_to(self):
         """Test transaction encryption fails with invalid 'to' address."""
         bite_mock = BITEMockup()
@@ -149,13 +163,13 @@ class TestBITEMockup:
         with pytest.raises(ValueError):
             await bite_mock.encrypt_transaction(tx)
 
-    async def test_encrypt_transaction_missing_gas_limit(self):
-        """Test transaction encryption fails when gas_limit is missing."""
+    async def test_encrypt_transaction_missing_gas(self):
+        """Test transaction encryption fails when gas is missing."""
         bite_mock = BITEMockup()
         tx = {
             'to': '0x1234567890123456789012345678901234567890',
             'data': '0x1234567890abcdef'
         }
 
-        with pytest.raises(ValueError, match="gas_limit"):
+        with pytest.raises(ValueError, match="gas"):
             await bite_mock.encrypt_transaction(tx)
