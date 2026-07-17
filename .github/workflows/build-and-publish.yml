@@ -89,10 +89,8 @@ jobs:
   publish:
     runs-on: ubuntu-24.04
     needs: [version, build]
-    environment: pypi
     permissions:
       contents: write
-      id-token: write
     steps:
       - uses: actions/checkout@v4
 
@@ -121,9 +119,15 @@ jobs:
           uvx twine check dist/* dist-ubuntu-22/*
 
       - name: Publish to PyPI
+        env:
+          PIP_USERNAME: ${{ secrets.PIP_USERNAME }}
+          PIP_PASSWORD: ${{ secrets.PIP_PASSWORD }}
         run: |
+          : "${PIP_USERNAME?Need to set PIP_USERNAME}"
+          : "${PIP_PASSWORD?Need to set PIP_PASSWORD}"
+
           echo "Uploading to pypi"
-          uv publish dist/*
+          uv publish --username "$PIP_USERNAME" --password "$PIP_PASSWORD" dist/*
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
