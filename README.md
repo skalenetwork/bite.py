@@ -25,10 +25,10 @@ pip install skale-bite
 
 ## Usage
 
-> ⚠️ **Warning**  
-> When passing a transaction to `bite`, it is necessary to set the gas_limit field manually.
+> ⚠️ **Warning**
+> When passing a transaction to `bite`, it is necessary to set the gas field manually.
 > This is because estimateGas does not return a proper value for encrypted transactions.
-> Always calculate and set `gas_limit` manually for your specific transaction.
+> Always calculate and set `gas` or `gas_limit` manually for your specific transaction.
 
 Here is an example of how to use the library to encrypt transaction data:
 
@@ -40,8 +40,8 @@ async def main():
     provider_url = 'https://example.com/jsonrpc'  # Replace with your provider URL
     transaction = {
         'to': '0x1234567890123456789012345678901234567890',
-        'data': '0x1234567890abcdef'
-        'gas_limit': 500000
+      'data': '0x1234567890abcdef',
+      'gas': 500000
     }
 
     try:
@@ -80,7 +80,7 @@ Creates a new instance of the `BITE` class, configured to use a specific BITE JS
 Encrypts a transaction object using the BLS threshold encryption public key(s) from the configured BITE provider. The encrypted transaction will have its `to` field set to the BITE magic address.
 
 - **Parameters**:
-  - `tx`: A dictionary containing `data` and `to` fields as hex strings.
+  - `tx`: A dictionary containing `data` and `to` fields as hex strings, plus `gas` or `gas_limit`.
 - **Returns**: `dict` – The encrypted transaction with modified `data` and `to` fields.
 
 **Encryption Process**:
@@ -134,7 +134,8 @@ async def test():
     bite_mock = BITEMockup()
     encrypted_tx = await bite_mock.encrypt_transaction({
         'to': '0x1234567890123456789012345678901234567890',
-        'data': '0x1234567890abcdef'
+      'data': '0x1234567890abcdef',
+      'gas': 500000
     })
     print(encrypted_tx)
 
