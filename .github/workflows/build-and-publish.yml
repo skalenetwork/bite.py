@@ -1,0 +1,140 @@
+#   -*- coding: utf-8 -*-
+#
+#   This file is part of SKALE.py
+#
+#   Copyright (C) 2019-Present SKALE Labs
+#
+#   SKALE.py is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU Affero General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   SKALE.py is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU Affero General Public License for more details.
+#
+#   You should have received a copy of the GNU Affero General Public License
+#   along with SKALE.py.  If not, see <https://www.gnu.org/licenses/>.
+
+name: Build and publish
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    types: [closed]
+    branches: ["main", "develop", "beta"]
+
+jobs:
+  version:
+    runs-on: ubuntu-24.04
+    if: github.event.pull_request.merged
+    outputs:
+      version: ${{ steps.versioning.outputs.version }}
+      release_tag: ${{ steps.versioning.outputs.release_tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Calculate version
+        id: versioning
+        run: |
+          export BRANCH=${{ github.event.pull_request.base.ref }}
+          VERSION=$(bash ./scripts/calculate_version.sh)
+          RELEASE_TAG="v${VERSION}"
+
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "release_tag=${RELEASE_TAG}" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: version
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            artifact_name: ubuntu-22
+          - os: ubuntu-24.04
+            artifact_name: ubuntu-24
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set package version
+        run: |
+          sed -i "s/^version = \".*\"$/version = \"${{ needs.version.outputs.version }}\"/" pyproject.toml
+          grep '^version = ' pyproject.toml
+
+      - name: Build distributions
+        run: bash scripts/build_packages.sh
+
+      - name: Validate distributions
+        run: |
+          uvx twine check dist/*
+
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pypi-dist-${{ matrix.artifact_name }}
+          path: dist/*
+
+  publish:
+    runs-on: ubuntu-24.04
+    needs: [version, build]
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Download Ubuntu 24 distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: pypi-dist-ubuntu-24
+          path: dist
+
+      - name: Download Ubuntu 22 distributions for release
+        uses: actions/download-artifact@v4
+        with:
+          name: pypi-dist-ubuntu-22
+          path: dist-ubuntu-22
+
+      - name: Validate distributions
+        run: |
+          uvx twine check dist/* dist-ubuntu-22/*
+
+      - name: Publish to PyPI
+        env:
+          PIP_USERNAME: ${{ secrets.PIP_USERNAME }}
+          PIP_PASSWORD: ${{ secrets.PIP_PASSWORD }}
+        run: |
+          : "${PIP_USERNAME?Need to set PIP_USERNAME}"
+          : "${PIP_PASSWORD?Need to set PIP_PASSWORD}"
+
+          echo "Uploading to pypi"
+          uv publish --username "$PIP_USERNAME" --password "$PIP_PASSWORD" dist/*
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.version.outputs.release_tag }}
+          name: ${{ needs.version.outputs.release_tag }}
+          generate_release_notes: true
+          files: |
+            dist/*
+            dist-ubuntu-22/*

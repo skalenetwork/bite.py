@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "bite-py"
-version = "0.7.0"
-description = "Python Library to interact with BITE protocol"
+name = "skale-bite"
+version = "0.8.2"
+description = "Python Library to interact with BITE protocol on Skale network"
 readme = "README.md"
 authors = [
     {name = "SKALE Labs", email = "support@skalelabs.com"}
@@ -18,8 +18,10 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries",
     "Topic :: Security :: Cryptography",
+    "Operating System :: POSIX :: Linux",
 ]
 keywords = ["SKALE", "blockchain", "BITE", "threshold", "cryptography", "encryption"]
 requires-python = ">=3.11"
@@ -27,6 +29,7 @@ dependencies = [
     "rlp>=3.0.0",
     "requests>=2.31.0",
     "pycryptodome>=3.19.0",
+    "t-encrypt==0.0.2.dev0",
 ]
 
 [project.optional-dependencies]
@@ -45,14 +48,17 @@ linter = [
     "importlib-metadata<9.0",
 ]
 [project.urls]
-Homepage = "https://github.com/skalenetwork/bite-py"
-Repository = "https://github.com/skalenetwork/bite-py"
-Documentation = "https://github.com/skalenetwork/bite-py"
+Homepage = "https://github.com/skalenetwork/bite.py"
+Repository = "https://github.com/skalenetwork/bite.py"
+Documentation = "https://github.com/skalenetwork/bite.py/tree/develop/examples"
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["bite*"]
 exclude = ["tests*", "examples*"]
+
+[tool.setuptools.package-data]
+"bite" = ["lib/*.so*"]
 
 [tool.mypy]
 python_version = "3.11"
@@ -75,3 +81,4 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
+asyncio_mode = "auto"
